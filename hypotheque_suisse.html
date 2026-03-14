@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur Hypothécaire Suisse — Canton de Vaud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Variables ────────────────────────────────────────────────────────── */
+:root {
+  --bg:       #eef1f5;
+  --card:     #ffffff;
+  --navy:     #1a3a5c;
+  --accent:   #1a5276;
+  --accent2:  #2471a3;
+  --cyan:     #0d8fa4;
+  --border:   #d5dce8;
+  --text:     #1c2733;
+  --muted:    #6b7a8d;
+  --ok:       #1a7a4a;
+  --warn:     #b7550a;
+  --nok:      #b03030;
+  --ok-bg:    #edf7f1;
+  --warn-bg:  #fef6ee;
+  --nok-bg:   #fef0f0;
+  --shadow:   0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.05);
+  --radius:   10px;
+  --font:     'Outfit', sans-serif;
+  --mono:     'DM Mono', monospace;
+}
+
+/* ── Reset ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+button { font-family: var(--font); cursor: pointer; }
+input, select { font-family: var(--font); }
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+#header {
+  background: var(--navy);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+#header h1 {
+  font-size: 14px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#header-sub { font-size: 10px; color: #88b0cc; margin-top: 1px; }
+.header-left { display: flex; flex-direction: column; }
+.header-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.btn-header {
+  padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.1); color: #fff; font-size: 12px; font-weight: 500;
+  transition: background .15s;
+}
+.btn-header:hover { background: rgba(255,255,255,.2); }
+.btn-calc {
+  padding: 5px 14px; border-radius: 6px; border: none;
+  background: var(--cyan); color: #fff; font-size: 13px; font-weight: 700;
+  transition: background .15s; margin-left: 8px;
+  box-shadow: 0 0 0 2px rgba(13,143,164,.3);
+}
+.btn-calc:hover { background: #0a7a8e; }
+.sep-v { width: 1px; height: 22px; background: rgba(255,255,255,.2); margin: 0 4px; }
+
+/* ── Tabs ─────────────────────────────────────────────────────────────── */
+#tabs-nav {
+  display: flex; background: var(--card); border-bottom: 2px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+}
+#tabs-nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 10px 18px; border: none; background: transparent;
+  color: var(--muted); font-size: 13px; font-weight: 600;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  white-space: nowrap; transition: color .15s, border-color .15s;
+}
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btn:hover:not(.active) { color: var(--text); }
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+#tabs-content { max-width: 960px; margin: 0 auto; padding: 16px 12px 40px; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── Cards ────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+
+/* ── Form grid ────────────────────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 180px; gap: 6px 12px; align-items: center; }
+.form-grid.narrow { grid-template-columns: 1fr 120px; }
+.form-label { font-size: 13px; color: var(--text); }
+.form-label.muted { color: var(--muted); font-size: 12px; }
+.form-input {
+  width: 100%; padding: 6px 10px; border: 1px solid var(--border);
+  border-radius: 6px; font-size: 13px; color: var(--text);
+  background: #f4f7fb; font-family: var(--mono);
+  text-align: right; transition: border-color .15s, background .15s;
+}
+.form-input:focus { outline: none; border-color: var(--accent2); background: #eaf1fb; }
+.form-input.error { border-color: var(--nok); background: #fff5f5; }
+
+/* ── Radio / Checkbox ─────────────────────────────────────────────────── */
+.radio-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
+.radio-option {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border: 1px solid var(--border);
+  border-radius: 20px; cursor: pointer; font-size: 12px; color: var(--muted);
+  transition: all .15s;
+}
+.radio-option input { display: none; }
+.radio-option.checked { border-color: var(--accent); background: #edf4ff; color: var(--accent); font-weight: 600; }
+.radio-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  border: 1.5px solid var(--border); flex-shrink: 0;
+}
+.radio-option.checked .radio-dot { background: var(--accent); border-color: var(--accent); }
+
+.toggle-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+.toggle-label { font-size: 13px; }
+.toggle {
+  position: relative; width: 36px; height: 20px;
+  background: var(--border); border-radius: 10px; cursor: pointer;
+  transition: background .2s; flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); }
+.toggle::after {
+  content: ''; position: absolute; width: 14px; height: 14px;
+  background: #fff; border-radius: 50%; top: 3px; left: 3px;
+  transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.toggle.on::after { left: 19px; }
+
+/* ── Note boxes ───────────────────────────────────────────────────────── */
+.note {
+  font-size: 11px; color: var(--muted); background: #f7f9fc;
+  border-left: 3px solid var(--border); padding: 6px 10px;
+  border-radius: 0 6px 6px 0; margin: 8px 0; line-height: 1.5;
+}
+
+/* ── Result tables ────────────────────────────────────────────────────── */
+.res-table { width: 100%; border-collapse: collapse; }
+.res-table tr { border-bottom: 1px solid #f0f2f5; }
+.res-table tr:last-child { border-bottom: none; }
+.res-table td { padding: 5px 4px; font-size: 13px; }
+.res-table td:last-child { text-align: right; font-weight: 600; color: var(--accent2); font-family: var(--mono); }
+.res-table tr.total td { font-weight: 700; color: var(--navy); font-size: 14px; border-top: 2px solid var(--border); }
+.res-table tr.separator td { padding: 2px; }
+.res-table .ok  { color: var(--ok)  !important; }
+.res-table .warn{ color: var(--warn)!important; }
+.res-table .nok { color: var(--nok) !important; }
+
+/* ── Dual columns ─────────────────────────────────────────────────────── */
+.dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 600px) { .dual-grid { grid-template-columns: 1fr; } }
+
+/* ── Verdict badges ───────────────────────────────────────────────────── */
+.verdict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.verdict-badge {
+  border-radius: 8px; padding: 12px 14px;
+  border: 1px solid var(--border);
+}
+.verdict-badge .v-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .04em; }
+.verdict-badge .v-value { font-size: 15px; font-weight: 700; }
+.verdict-badge.ok  { background: var(--ok-bg);   border-color: #a8dfc0; }
+.verdict-badge.warn{ background: var(--warn-bg);  border-color: #f0c090; }
+.verdict-badge.nok { background: var(--nok-bg);   border-color: #f0aaaa; }
+.verdict-badge.ok  .v-value { color: var(--ok);   }
+.verdict-badge.warn .v-value{ color: var(--warn);  }
+.verdict-badge.nok .v-value { color: var(--nok);  }
+
+/* ── Capacity summary ─────────────────────────────────────────────────── */
+.cap-grid { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: center; }
+.cap-label { font-size: 13px; }
+.cap-value { font-family: var(--mono); font-size: 13px; font-weight: 600; text-align: right; color: var(--accent2); }
+.cap-value.ok  { color: var(--ok);   }
+.cap-value.warn{ color: var(--warn); }
+.cap-value.nok { color: var(--nok);  }
+.cap-sep { grid-column: 1/-1; height: 1px; background: var(--border); margin: 4px 0; }
+.cap-sub { font-size: 11px; color: var(--muted); }
+
+/* ── Dual comparison table ────────────────────────────────────────────── */
+.cmp-table { width: 100%; border-collapse: collapse; }
+.cmp-table th { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 4px 6px; }
+.cmp-table th:first-child { text-align: left; color: var(--muted); }
+.cmp-table th.col-r { color: var(--accent); text-align: right; }
+.cmp-table th.col-t { color: var(--warn);   text-align: right; }
+.cmp-table td { font-size: 13px; padding: 5px 6px; border-bottom: 1px solid #f0f2f5; }
+.cmp-table td:not(:first-child) { text-align: right; font-family: var(--mono); font-weight: 600; }
+.cmp-table tr.total td { font-weight: 700; font-size: 14px; border-top: 2px solid var(--border); }
+
+/* ── Retrait/nantissement analysis ───────────────────────────────────── */
+.ana-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ana-table th { font-size: 11px; font-weight: 700; padding: 4px 8px; text-transform: uppercase; letter-spacing: .04em; }
+.ana-table th:first-child { text-align: left; color: var(--muted); }
+.ana-table th.col-lpp { color: var(--accent); text-align: right; }
+.ana-table th.col-p3  { color: var(--accent); text-align: right; }
+.ana-table th.col-cum { color: var(--warn);   text-align: right; }
+.ana-table td { padding: 5px 8px; border-bottom: 1px solid #f0f2f5; }
+.ana-table td:not(:first-child) { text-align: right; font-family: var(--mono); font-weight: 600; }
+.ana-table .verdict-ok   { color: var(--ok);   }
+.ana-table .verdict-warn { color: var(--warn);  }
+.ana-table .verdict-nok  { color: var(--nok);   }
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 7px; border: none;
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 600;
+  transition: background .15s;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--card);
+  color: var(--accent); font-size: 13px; font-weight: 600;
+  transition: all .15s;
+}
+.btn-secondary:hover { background: #edf4ff; border-color: var(--accent); }
+.btn-warn {
+  padding: 5px 10px; border-radius: 6px;
+  border: 1px solid #f0aaaa; background: #fff8f8;
+  color: var(--nok); font-size: 12px; font-weight: 600;
+}
+.btn-apply {
+  padding: 4px 10px; border-radius: 6px; border: 1px solid var(--accent);
+  background: #edf4ff; color: var(--accent); font-size: 12px; font-weight: 600;
+  transition: all .15s;
+}
+.btn-apply:hover { background: var(--accent); color: #fff; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+/* ── Status indicator ─────────────────────────────────────────────────── */
+.status-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 12px;
+  background: #f7f9fc; border-radius: 8px; margin-top: 8px;
+}
+.status-pill {
+  font-size: 11px; font-weight: 600; padding: 3px 8px;
+  border-radius: 12px;
+}
+.status-pill.ok   { background: #d4f0e0; color: var(--ok);   }
+.status-pill.warn { background: #fde8cc; color: var(--warn); }
+.status-pill.nok  { background: #fdd5d5; color: var(--nok);  }
+
+/* ── Mobile ───────────────────────────────────────────────────────────── */
+@media (max-width: 500px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .form-input { text-align: left; }
+  #header h1 { font-size: 12px; }
+  .btn-header span { display: none; }
+}
+
+/* ── Toast ────────────────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--navy); color: #fff; padding: 10px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; opacity: 0;
+  transition: opacity .3s; pointer-events: none; z-index: 999;
+}
+#toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────────── -->
+<div id="header">
+  <div class="header-left">
+    <div id="header-h1" style="font-size:14px;font-weight:600;color:#fff">🏠 Simulateur Hypothécaire Suisse</div>
+    <div class="header-sub">Canton de Vaud · Marché Lausanne</div>
+  </div>
+  <div class="header-btns">
+    <button class="btn-header" onclick="exportJSON()">📄 <span>Export</span></button>
+    <button class="btn-header" onclick="document.getElementById('importFile').click()">📂 <span>Import</span></button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="btn-header btn-warn" onclick="resetAll()" style="border-color:rgba(255,120,120,.4)">🔄</button>
+    <div class="sep-v"></div>
+    <button class="btn-calc" onclick="calculate()">⚡ CALCULER</button>
+  </div>
+</div>
+
+<!-- ── Tabs nav ────────────────────────────────────────────────────────── -->
+<div id="tabs-nav">
+  <button class="tab-btn active" onclick="showTab(0)">① Revenus</button>
+  <button class="tab-btn" onclick="showTab(1)">② Bien &amp; Fonds propres</button>
+  <button class="tab-btn" onclick="showTab(2)">③ Hypothèque &amp; Taux</button>
+  <button class="tab-btn" onclick="showTab(3)">④ Résultats &amp; Bilan</button>
+</div>
+
+<!-- ── Content ────────────────────────────────────────────────────────── -->
+<div id="tabs-content">
+
+<!-- ════════════════════════════════════ TAB 1 : REVENUS ══════════════ -->
+<div class="tab-pane active" id="tab0">
+
+  <div class="card">
+    <div class="card-title">Salaires bruts annuels</div>
+    <div class="form-grid">
+      <label class="form-label">Salaire brut annuel — demandeur principal (CHF)</label>
+      <input class="form-input" id="salaire_principal" value="150'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+
+      <div class="toggle-row" style="grid-column:1/-1">
+        <div class="toggle" id="tog_conjoint" onclick="toggleConjoint()"></div>
+        <span class="toggle-label">Inclure salaire conjoint / partenaire</span>
+      </div>
+
+      <label class="form-label" id="lbl_conjoint" style="opacity:.4">Salaire brut annuel — conjoint (CHF)</label>
+      <input class="form-input" id="salaire_conjoint" value="0" disabled style="opacity:.4" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Bonus</div>
+    <div style="margin-bottom:8px;font-size:12px;color:var(--muted)">Traitement du bonus :</div>
+    <div class="radio-group" id="rg_bonus">
+      <label class="radio-option checked" data-val="ignorer"><input type="radio" name="mode_bonus" value="ignorer" checked><div class="radio-dot"></div>Ignorer</label>
+      <label class="radio-option" data-val="moy3ans"><input type="radio" name="mode_bonus" value="moy3ans"><div class="radio-dot"></div>Moyenne 3 ans (saisir la moyenne)</label>
+      <label class="radio-option" data-val="100pct"><input type="radio" name="mode_bonus" value="100pct"><div class="radio-dot"></div>100% du bonus récent</label>
+    </div>
+    <div class="note">Les banques suisses retiennent usuellement la moyenne des 3 dernières années à 100%, ou parfois 66% du bonus le plus récent selon les établissements (UBS, Raiffeisen, BCVS).</div>
+    <div class="form-grid" style="margin-top:8px">
+      <label class="form-label">Bonus annuel brut — principal (CHF)</label>
+      <input class="form-input" id="bonus_principal" value="0" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+      <label class="form-label" id="lbl_bonus_conjoint" style="opacity:.4">Bonus annuel brut — conjoint (CHF)</label>
+      <input class="form-input" id="bonus_conjoint" value="0" disabled style="opacity:.4" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Revenus complémentaires</div>
+    <div class="form-grid">
+      <label class="form-label">Revenus locatifs nets annuels (CHF)</label>
+      <input class="form-input" id="revenus_locatifs" value="0" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+    </div>
+  </div>
+
+</div><!-- end tab0 -->
+
+<!-- ══════════════════════════════ TAB 2 : BIEN & FP ═════════════════ -->
+<div class="tab-pane" id="tab1">
+
+  <div class="card">
+    <div class="card-title">Bien immobilier</div>
+    <div class="form-grid">
+      <label class="form-label">Prix d'achat (CHF)</label>
+      <input class="form-input" id="prix_achat" value="900'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+      <label class="form-label">Valeur vénale estimée (CHF) — si différente</label>
+      <input class="form-input" id="valeur_venale" value="900'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px">Type de bien :</div>
+    <div class="radio-group" id="rg_type_bien">
+      <label class="radio-option checked" data-val="PPE"><input type="radio" name="type_bien" value="PPE" checked><div class="radio-dot"></div>PPE</label>
+      <label class="radio-option" data-val="Villa"><input type="radio" name="type_bien" value="Villa"><div class="radio-dot"></div>Villa</label>
+      <label class="radio-option" data-val="Immeuble"><input type="radio" name="type_bien" value="Immeuble"><div class="radio-dot"></div>Immeuble</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Frais d'acquisition (Canton de Vaud)</div>
+    <div class="form-grid narrow">
+      <label class="form-label">Droits de mutation VD (%)</label>
+      <input class="form-input" id="frais_mutation" value="2.2">
+      <label class="form-label">Frais notaire (%)</label>
+      <input class="form-input" id="frais_notaire" value="0.5">
+      <label class="form-label">Frais registre foncier (%)</label>
+      <input class="form-input" id="frais_registre" value="0.3">
+    </div>
+    <div id="frais_total_label" style="margin-top:10px;font-size:13px;font-weight:600;color:var(--accent)">Total frais : —</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Fonds propres &amp; Structure</div>
+
+    <div class="form-grid" style="margin-bottom:4px">
+      <label class="form-label">Fonds propres cash / épargne (CHF)</label>
+      <input class="form-input" id="fp_cash" value="100'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div id="cash_min_label" style="font-size:12px;font-weight:600;color:var(--warn)">Cash minimum requis : —</div>
+      <button class="btn-apply" onclick="applyCashMin()">⬆ Appliquer le minimum</button>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:4px;font-size:12px;color:var(--muted)">2ème pilier LPP</div>
+    <div class="form-grid" style="margin-bottom:6px">
+      <label class="form-label">Montant disponible (CHF)</label>
+      <input class="form-input" id="lpp_montant" value="50'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+      <label class="form-label">Rendement annuel estimé (%)</label>
+      <input class="form-input" id="lpp_rendement" value="2.50">
+    </div>
+    <div class="radio-group" id="rg_lpp_mode">
+      <label class="radio-option" data-val="retrait"><input type="radio" name="lpp_mode" value="retrait"><div class="radio-dot"></div>Retrait (réduit capital)</label>
+      <label class="radio-option checked" data-val="nantissement"><input type="radio" name="lpp_mode" value="nantissement" checked><div class="radio-dot"></div>Nantissement (garantie)</label>
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin:10px 0 4px;font-size:12px;color:var(--muted)">3ème pilier (3a/3b)</div>
+    <div class="form-grid" style="margin-bottom:6px">
+      <label class="form-label">Montant disponible (CHF)</label>
+      <input class="form-input" id="pilier3_montant" value="30'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+      <label class="form-label">Rendement annuel estimé (%)</label>
+      <input class="form-input" id="pilier3_rendement" value="3.00">
+    </div>
+    <div class="radio-group" id="rg_p3_mode">
+      <label class="radio-option" data-val="retrait"><input type="radio" name="p3_mode" value="retrait"><div class="radio-dot"></div>Retrait (réduit capital)</label>
+      <label class="radio-option checked" data-val="nantissement"><input type="radio" name="p3_mode" value="nantissement" checked><div class="radio-dot"></div>Nantissement (garantie)</label>
+    </div>
+
+    <div class="note" style="margin-top:10px">Règles FINMA : LTV effective ≤ 80% | FP durs (hors LPP) ≥ 10% de la valeur vénale.<br>Les frais d'acquisition doivent obligatoirement être couverts par du cash.<br>Le nantissement permet d'emprunter au-delà de 80% LTV nominal — mais augmente l'hypothèque et donc le taux d'endettement.</div>
+    <div id="finma_summary" class="status-bar"></div>
+  </div>
+
+</div><!-- end tab1 -->
+
+<!-- ══════════════════════════════ TAB 3 : HYPOTHÈQUE ════════════════ -->
+<div class="tab-pane" id="tab2">
+
+  <div class="card">
+    <div class="card-title">Taux &amp; Type de crédit</div>
+    <div class="form-grid narrow">
+      <label class="form-label">Taux d'intérêt réel négocié (%)</label>
+      <input class="form-input" id="taux_reel" value="1.80">
+      <label class="form-label">Durée du crédit (années)</label>
+      <input class="form-input" id="duree_credit" value="25">
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px">Type de crédit :</div>
+    <div class="radio-group" id="rg_type_hypo">
+      <label class="radio-option checked" data-val="fixe"><input type="radio" name="type_hypo" value="fixe" checked><div class="radio-dot"></div>Fixe</label>
+      <label class="radio-option" data-val="saron"><input type="radio" name="type_hypo" value="saron"><div class="radio-dot"></div>SARON</label>
+      <label class="radio-option" data-val="mixte"><input type="radio" name="type_hypo" value="mixte"><div class="radio-dot"></div>Mixte</label>
+    </div>
+    <div class="note" style="margin-top:10px">Le taux théorique standard utilisé par les banques suisses pour le test d'affordability est de 5%, indépendamment du taux réel négocié. Les deux scénarios sont calculés en parallèle dans les résultats.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Charges du bien</div>
+    <div class="radio-group" id="rg_charges_mode" style="margin-bottom:10px">
+      <label class="radio-option checked" data-val="forfait"><input type="radio" name="charges_mode" value="forfait" checked><div class="radio-dot"></div>Forfait 1% valeur vénale / an (bancaire)</label>
+      <label class="radio-option" data-val="reelles"><input type="radio" name="charges_mode" value="reelles"><div class="radio-dot"></div>Charges réelles</label>
+    </div>
+    <div class="form-grid">
+      <label class="form-label">Charges réelles annuelles (CHF)</label>
+      <input class="form-input" id="charges_reelles_annuelles" value="0" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+    </div>
+  </div>
+
+</div><!-- end tab2 -->
+
+<!-- ════════════════════════════════ TAB 4 : RÉSULTATS ══════════════ -->
+<div class="tab-pane" id="tab3">
+
+  <!-- Verdicts -->
+  <div class="card">
+    <div class="card-title">Verdict d'affordability</div>
+    <div class="verdict-grid">
+      <div class="verdict-badge" id="badge_reel">
+        <div class="v-label">Taux réel</div>
+        <div class="v-value" id="v_reel">—</div>
+      </div>
+      <div class="verdict-badge" id="badge_theo">
+        <div class="v-label">Taux théorique 5%</div>
+        <div class="v-value" id="v_theo">—</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">≤33% ✅ Standard &nbsp;|&nbsp; ≤35% ⚠️ Profils solides &nbsp;|&nbsp; ≤38% 🔶 Cas exceptionnels &nbsp;|&nbsp; >38% ❌ Refus</div>
+  </div>
+
+  <!-- Capacité d'emprunt -->
+  <div class="card">
+    <div class="card-title">Capacité d'emprunt — Synthèse</div>
+    <div class="cap-grid">
+      <span class="cap-label">Emprunt max selon revenus (33%, test 5%)</span>
+      <span class="cap-value" id="cap_max_33">—</span>
+      <span class="cap-label">Emprunt max selon revenus (35%, test 5%)</span>
+      <span class="cap-value" id="cap_max_35">—</span>
+      <span class="cap-label">Emprunt max LTV 80% + nantissement</span>
+      <span class="cap-value" id="cap_max_ltv">—</span>
+      <div class="cap-sep"></div>
+      <span class="cap-label" style="font-weight:600">Emprunt nécessaire avec votre apport</span>
+      <span class="cap-value" id="cap_necessaire" style="color:var(--navy)">—</span>
+      <div class="cap-sep"></div>
+      <span class="cap-label">Apport cash manquant pour 33%</span>
+      <span class="cap-value" id="cap_manque_33">—</span>
+      <span class="cap-label">Apport cash manquant pour 35%</span>
+      <span class="cap-value" id="cap_manque_35">—</span>
+    </div>
+  </div>
+
+  <!-- Bilan mensuel + Affordability -->
+  <div class="dual-grid">
+    <div class="card">
+      <div class="card-title">Bilan mensuel</div>
+      <table class="cmp-table">
+        <thead><tr><th></th><th class="col-r">Taux réel</th><th class="col-t">5% théo.</th></tr></thead>
+        <tbody>
+          <tr><td>Intérêts / mois</td><td id="b_int_r">—</td><td id="b_int_t">—</td></tr>
+          <tr><td>Amortissement / mois</td><td id="b_am_r">—</td><td id="b_am_t">—</td></tr>
+          <tr><td>Charges / mois</td><td id="b_chg_r">—</td><td id="b_chg_t">—</td></tr>
+          <tr class="total"><td>Total mensuel</td><td id="b_tot_r">—</td><td id="b_tot_t">—</td></tr>
+          <tr><td>Revenu brut mensuel</td><td id="b_rev_r">—</td><td id="b_rev_t">—</td></tr>
+          <tr><td>Taux d'effort</td><td id="b_eff_r">—</td><td id="b_eff_t">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Affordability annuelle</div>
+      <table class="cmp-table">
+        <thead><tr><th></th><th class="col-r">Taux réel</th><th class="col-t">5% théo.</th></tr></thead>
+        <tbody>
+          <tr><td>Taux appliqué</td><td id="a_taux_r">—</td><td id="a_taux_t">—</td></tr>
+          <tr><td>Intérêts annuels</td><td id="a_int_r">—</td><td id="a_int_t">—</td></tr>
+          <tr><td>Amortissement / an</td><td id="a_am_r">—</td><td id="a_am_t">—</td></tr>
+          <tr><td>Charges / an</td><td id="a_chg_r">—</td><td id="a_chg_t">—</td></tr>
+          <tr class="total"><td>Total charges / an</td><td id="a_tot_r">—</td><td id="a_tot_t">—</td></tr>
+          <tr><td>Taux d'endettement</td><td id="a_rat_r">—</td><td id="a_rat_t">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Structure hypothécaire + Revenus -->
+  <div class="dual-grid">
+    <div class="card">
+      <div class="card-title">Structure hypothécaire</div>
+      <table class="res-table">
+        <tr><td>Valeur vénale</td><td id="r_vv">—</td></tr>
+        <tr><td>Cash net après frais</td><td id="r_cash_net">—</td></tr>
+        <tr><td>FP effectifs</td><td id="r_fp_eff">—</td></tr>
+        <tr><td>FP durs (hors LPP)</td><td id="r_fp_durs">—</td></tr>
+        <tr class="separator"><td colspan="2"></td></tr>
+        <tr><td>Hypothèque totale</td><td id="r_hypo_tot">—</td></tr>
+        <tr><td>1ère hypothèque (≤65%)</td><td id="r_hypo1">—</td></tr>
+        <tr><td>2ème hypothèque (65–80%)</td><td id="r_hypo2">—</td></tr>
+        <tr><td>LTV nominale / effective</td><td id="r_ltv">—</td></tr>
+        <tr><td>FP durs / valeur vénale</td><td id="r_fp_pct">—</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Revenus &amp; Frais d'acquisition</div>
+      <table class="res-table">
+        <tr><td>Revenu brut annuel</td><td id="r_brut">—</td></tr>
+        <tr><td>Base de calcul mensuel</td><td id="r_mens">—</td></tr>
+        <tr class="separator"><td colspan="2"></td></tr>
+        <tr><td>Prix d'achat</td><td id="r_prix">—</td></tr>
+        <tr><td>Droits de mutation VD</td><td id="r_mut">—</td></tr>
+        <tr><td>Frais notaire + registre</td><td id="r_not">—</td></tr>
+        <tr><td>Total frais</td><td id="r_frais">—</td></tr>
+        <tr class="total"><td>Coût total</td><td id="r_cout">—</td></tr>
+        <tr class="separator"><td colspan="2"></td></tr>
+        <tr><td>Total FP engagés</td><td id="r_fp_tot">—</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Impact fiscal -->
+  <div class="card">
+    <div class="card-title">Impact fiscal — Retraits hypothétiques (estimation VD)</div>
+    <div class="note">Taux réduit 1/5 barème ICC+IFD — résidence Lausanne, état civil seul. Calculé sur les montants complets, quelle que soit l'option choisie. Estimation indicative.</div>
+    <div style="overflow-x:auto;margin-top:8px">
+      <table class="ana-table">
+        <thead><tr><th></th><th class="col-lpp">LPP</th><th class="col-p3">3ème pilier</th><th class="col-cum">Cumulé *</th></tr></thead>
+        <tbody>
+          <tr><td>Montant retiré</td><td id="f_lpp_m">—</td><td id="f_p3_m">—</td><td id="f_cum_m">—</td></tr>
+          <tr><td>Impôt estimé</td><td id="f_lpp_i">—</td><td id="f_p3_i">—</td><td id="f_cum_i">—</td></tr>
+          <tr><td>Taux effectif</td><td id="f_lpp_t">—</td><td id="f_p3_t">—</td><td id="f_cum_t">—</td></tr>
+          <tr><td>Net après impôt</td><td id="f_lpp_n">—</td><td id="f_p3_n">—</td><td id="f_cum_n">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">* Montants cumulés si retrait LPP et 3ème pilier la même année.</div>
+  </div>
+
+  <!-- Analyse retrait vs nantissement -->
+  <div class="card">
+    <div class="card-title">Analyse comparative : Retrait vs Nantissement</div>
+    <div class="note">Delta annuel net = Économie d'intérêts (retrait) − Rendement perdu (nantissement). Positif → retrait plus avantageux. Le seuil de rentabilité indique combien d'années pour amortir le coût fiscal.</div>
+    <div id="ana_taux_legend" style="font-size:11px;color:var(--muted);margin:6px 0"></div>
+    <div style="overflow-x:auto">
+      <table class="ana-table">
+        <thead><tr><th></th><th class="col-lpp">LPP seul</th><th class="col-p3">3ème pilier seul</th><th class="col-cum">Cumul (même année)</th></tr></thead>
+        <tbody>
+          <tr><td>Montant concerné</td><td id="ana_lpp_m">—</td><td id="ana_p3_m">—</td><td id="ana_cum_m">—</td></tr>
+          <tr><td>Économie intérêts / an</td><td id="ana_lpp_ei">—</td><td id="ana_p3_ei">—</td><td id="ana_cum_ei">—</td></tr>
+          <tr><td>Rendement annuel si conservé</td><td id="ana_lpp_r">—</td><td id="ana_p3_r">—</td><td id="ana_cum_r">—</td></tr>
+          <tr><td>Delta annuel net</td><td id="ana_lpp_d">—</td><td id="ana_p3_d">—</td><td id="ana_cum_d">—</td></tr>
+          <tr><td>Impôt retrait (coût unique)</td><td id="ana_lpp_i">—</td><td id="ana_p3_i">—</td><td id="ana_cum_i">—</td></tr>
+          <tr><td>Seuil de rentabilité</td><td id="ana_lpp_s">—</td><td id="ana_p3_s">—</td><td id="ana_cum_s">—</td></tr>
+          <tr><td>Verdict</td><td id="ana_lpp_v">—</td><td id="ana_p3_v">—</td><td id="ana_cum_v">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- end tab3 -->
+</div><!-- end tabs-content -->
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════
+const TAUX_THEO   = 0.05;
+const LTV_MAX     = 0.80;
+const FP_DURS_MIN = 0.10;
+const SEUIL_33    = 0.33;
+const SEUIL_35    = 0.35;
+const SEUIL_38    = 0.38;
+const AMORT_ANS   = 15;
+const ENTRETIEN   = 0.01;
+
+// ═══════════════════════════════════════════════════════════════════════
+// FORMAT UTILITIES
+// ═══════════════════════════════════════════════════════════════════════
+function fmtCHF(v) {
+  if (isNaN(v) || v === null) return '—';
+  const abs = Math.abs(v);
+  const sign = v < 0 ? '−' : '';
+  const s = Math.round(abs).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+  return sign + 'CHF\u00a0' + s;
+}
+function fmtPct(v) {
+  if (isNaN(v)) return '—';
+  return v.toFixed(2) + '%';
+}
+function fmtNum(s) {
+  // Parse a formatted number string → float
+  return parseFloat(String(s).replace(/'/g, '').replace(',', '.')) || 0;
+}
+function fmtInput(n) {
+  if (!n && n !== 0) return '';
+  const r = Math.round(parseFloat(n));
+  return r.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+}
+function fmtOnInput(el) {
+  // Remove non-numeric while typing
+  let v = el.value.replace(/[^0-9.,']/g, '');
+  el.value = v;
+}
+function fmtOnBlur(el) {
+  const v = fmtNum(el.value);
+  if (!isNaN(v)) el.value = fmtInput(v);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════════════════════════════════════════════
+function showTab(i) {
+  document.querySelectorAll('.tab-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
+  document.querySelectorAll('.tab-pane').forEach((p, idx) => p.classList.toggle('active', idx === i));
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// RADIO GROUP HELPERS
+// ═══════════════════════════════════════════════════════════════════════
+function initRadioGroups() {
+  document.querySelectorAll('.radio-group').forEach(grp => {
+    grp.querySelectorAll('.radio-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const inp = opt.querySelector('input');
+        inp.checked = true;
+        grp.querySelectorAll('.radio-option').forEach(o => o.classList.remove('checked'));
+        opt.classList.add('checked');
+        saveState();
+      });
+    });
+  });
+}
+function getRadio(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : '';
+}
+function setRadio(name, val) {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(inp => {
+    const opt = inp.closest('.radio-option');
+    if (inp.value === val) { inp.checked = true; opt.classList.add('checked'); }
+    else { inp.checked = false; opt.classList.remove('checked'); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TOGGLE CONJOINT
+// ═══════════════════════════════════════════════════════════════════════
+let conjointActive = false;
+function toggleConjoint() {
+  conjointActive = !conjointActive;
+  const tog = document.getElementById('tog_conjoint');
+  tog.classList.toggle('on', conjointActive);
+  const dis = !conjointActive;
+  ['salaire_conjoint','bonus_conjoint'].forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = dis; el.style.opacity = dis ? '.4' : '1';
+  });
+  ['lbl_conjoint','lbl_bonus_conjoint'].forEach(id => {
+    document.getElementById(id).style.opacity = dis ? '.4' : '1';
+  });
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// FISCAL TAX CALCULATION (VD brackets)
+// ═══════════════════════════════════════════════════════════════════════
+function calcImpotVD(montant) {
+  if (montant <= 0) return 0;
+  const brackets = [
+    [10000, 0.020], [25000, 0.028], [50000, 0.038], [75000, 0.047],
+    [100000, 0.054], [150000, 0.062], [200000, 0.070], [300000, 0.080],
+    [500000, 0.092], [750000, 0.102], [1000000, 0.110], [Infinity, 0.115]
+  ];
+  let prev = 0, prevT = brackets[0][1];
+  for (const [cap, taux] of brackets) {
+    if (montant <= cap) {
+      if (cap === prev) return montant * taux;
+      const ratio = (montant - prev) / (cap - prev);
+      return montant * (prevT + ratio * (taux - prevT));
+    }
+    prev = cap; prevT = taux;
+  }
+  return montant * brackets[brackets.length-1][1];
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MAIN CALCULATION
+// ═══════════════════════════════════════════════════════════════════════
+function calculate() {
+  saveState();
+
+  // ── 1. REVENUS ──
+  const s1       = fmtNum(document.getElementById('salaire_principal').value);
+  const s2       = conjointActive ? fmtNum(document.getElementById('salaire_conjoint').value) : 0;
+  const b1raw    = fmtNum(document.getElementById('bonus_principal').value);
+  const b2raw    = conjointActive ? fmtNum(document.getElementById('bonus_conjoint').value) : 0;
+  const revLoc   = fmtNum(document.getElementById('revenus_locatifs').value);
+  const modeBonus= getRadio('mode_bonus');
+
+  const bonus = modeBonus === 'ignorer' ? 0 : b1raw + b2raw;
+  const revenu_base = s1 + s2 + bonus + revLoc;
+  const rev_mensuel = revenu_base / 12;
+
+  // ── 2. BIEN ──
+  const prix_achat   = fmtNum(document.getElementById('prix_achat').value);
+  const vv_raw       = fmtNum(document.getElementById('valeur_venale').value);
+  const val_venale   = vv_raw > 0 ? vv_raw : prix_achat;
+  const tx_mut       = fmtNum(document.getElementById('frais_mutation').value) / 100;
+  const tx_not       = fmtNum(document.getElementById('frais_notaire').value) / 100;
+  const tx_reg       = fmtNum(document.getElementById('frais_registre').value) / 100;
+  const droits_mut   = prix_achat * tx_mut;
+  const frais_not    = prix_achat * tx_not;
+  const frais_reg    = prix_achat * tx_reg;
+  const total_frais  = droits_mut + frais_not + frais_reg;
+  const cout_total   = prix_achat + total_frais;
+
+  document.getElementById('frais_total_label').textContent =
+    `Total frais : ${fmtCHF(total_frais)}   —   Coût total : ${fmtCHF(cout_total)}`;
+
+  // ── 3. FONDS PROPRES ──
+  const fp_cash     = fmtNum(document.getElementById('fp_cash').value);
+  const lpp_montant = fmtNum(document.getElementById('lpp_montant').value);
+  const p3_montant  = fmtNum(document.getElementById('pilier3_montant').value);
+  const lpp_mode    = getRadio('lpp_mode');
+  const p3_mode     = getRadio('p3_mode');
+
+  const frais_ok  = fp_cash >= total_frais;
+  const fp_cash_net = fp_cash - total_frais;
+
+  // Cash minimum
+  const cash_min = total_frais + val_venale * FP_DURS_MIN;
+  window._cashMinVal = cash_min;
+  const cashMinEl = document.getElementById('cash_min_label');
+  cashMinEl.textContent = `Cash minimum requis (frais + 10% VV) : ${fmtCHF(cash_min)}`;
+  cashMinEl.style.color = fp_cash >= cash_min ? 'var(--ok)' : 'var(--warn)';
+
+  const lpp_retrait = lpp_mode === 'retrait' ? lpp_montant : 0;
+  const p3_retrait  = p3_mode  === 'retrait' ? p3_montant  : 0;
+  const lpp_nant    = lpp_mode === 'nantissement' ? lpp_montant : 0;
+  const p3_nant     = p3_mode  === 'nantissement' ? p3_montant  : 0;
+  const total_nant  = lpp_nant + p3_nant;
+
+  const fp_effectifs = fp_cash_net + lpp_retrait + p3_retrait;
+  const fp_durs      = fp_cash_net + p3_retrait;  // hors LPP
+
+  // ── 4. STRUCTURE HYPOTHÉCAIRE ──
+  const seuil_1ere   = val_venale * 0.65;
+  const hypo_max_ltv = val_venale * LTV_MAX + total_nant;
+  const hypo_total   = Math.min(Math.max(0, val_venale - fp_effectifs), hypo_max_ltv);
+  const hypo1        = Math.min(hypo_total, seuil_1ere);
+  const hypo2        = Math.max(0, hypo_total - hypo1);
+
+  const ltv_nominale  = val_venale > 0 ? hypo_total / val_venale : 0;
+  const ltv_effective = val_venale > 0 ? Math.max(0, hypo_total - total_nant) / val_venale : 0;
+  const fp_durs_pct   = val_venale > 0 ? fp_durs / val_venale : 0;
+
+  const ltv_ok    = ltv_effective <= LTV_MAX;
+  const fp_durs_ok = fp_durs_pct >= FP_DURS_MIN;
+
+  // FINMA summary pills
+  const finmaEl = document.getElementById('finma_summary');
+  finmaEl.innerHTML = '';
+  const pills = [
+    [frais_ok, frais_ok ? `✅ Frais couverts (cash net : ${fmtCHF(fp_cash_net)})` : `❌ Cash insuffisant pour frais (manque ${fmtCHF(total_frais - fp_cash)})`],
+    [ltv_ok, total_nant > 0
+      ? (ltv_ok ? `✅ LTV eff. ${fmtPct(ltv_effective*100)} ≤ 80% (nom. ${fmtPct(ltv_nominale*100)})` : `❌ LTV effective ${fmtPct(ltv_effective*100)} > 80%`)
+      : (ltv_ok ? `✅ LTV ${fmtPct(ltv_nominale*100)} ≤ 80%` : `❌ LTV ${fmtPct(ltv_nominale*100)} > 80%`)],
+    [fp_durs_ok, fp_durs_ok ? `✅ FP durs ${fmtPct(fp_durs_pct*100)} ≥ 10%` : `❌ FP durs ${fmtPct(fp_durs_pct*100)} < 10%`],
+  ];
+  pills.forEach(([ok, txt]) => {
+    const span = document.createElement('span');
+    span.className = 'status-pill ' + (ok ? 'ok' : 'nok');
+    span.textContent = txt;
+    finmaEl.appendChild(span);
+  });
+
+  // ── 5. AMORTISSEMENT & CHARGES ──
+  const amort_annuel = hypo2 > 0 ? hypo2 / AMORT_ANS : 0;
+  const charges_mode = getRadio('charges_mode');
+  const charges_annuelles = charges_mode === 'forfait'
+    ? val_venale * ENTRETIEN
+    : fmtNum(document.getElementById('charges_reelles_annuelles').value);
+
+  // ── 6. AFFORDABILITY ──
+  const taux_reel = fmtNum(document.getElementById('taux_reel').value) / 100;
+
+  function calcAff(taux) {
+    const int_an  = hypo_total * taux;
+    const tot_an  = int_an + amort_annuel + charges_annuelles;
+    const ratio   = revenu_base > 0 ? tot_an / revenu_base : 99;
+    return { int_an, amort: amort_annuel, chg: charges_annuelles, tot_an, ratio };
+  }
+
+  const aff_r = calcAff(taux_reel);
+  const aff_t = calcAff(TAUX_THEO);
+
+  // ── 7. VERDICTS ──
+  function getVerdict(ratio) {
+    if (ratio <= SEUIL_33) return ['ok',  `✅ Finançable (≤33%)`];
+    if (ratio <= SEUIL_35) return ['warn',`⚠️ Limite — profil solide requis (≤35%)`];
+    if (ratio <= SEUIL_38) return ['warn',`🔶 Cas exceptionnel / banque alternative (≤38%)`];
+    return ['nok', `❌ Non finançable (>38%)`];
+  }
+  const [cls_r, txt_r] = getVerdict(aff_r.ratio);
+  const [cls_t, txt_t] = getVerdict(aff_t.ratio);
+
+  ['badge_reel','badge_theo'].forEach(id => {
+    const el = document.getElementById(id);
+    el.className = 'verdict-badge';
+  });
+  document.getElementById('badge_reel').classList.add(cls_r);
+  document.getElementById('badge_theo').classList.add(cls_t);
+  document.getElementById('v_reel').textContent = txt_r;
+  document.getElementById('v_theo').textContent = txt_t;
+
+  // ── 8. CAPACITÉ D'EMPRUNT ──
+  const amort_rate = 1 / AMORT_ANS;
+
+  function hypoMaxRevenu(seuil) {
+    const avec2 = (revenu_base * seuil - charges_annuelles + seuil_1ere * amort_rate) / (TAUX_THEO + amort_rate);
+    const sans2 = TAUX_THEO > 0 ? (revenu_base * seuil - charges_annuelles) / TAUX_THEO : 0;
+    return Math.max(0, avec2 > seuil_1ere ? avec2 : Math.min(sans2, seuil_1ere));
+  }
+
+  const cap33   = hypoMaxRevenu(SEUIL_33);
+  const cap35   = hypoMaxRevenu(SEUIL_35);
+  const cap_ltv = hypo_max_ltv;
+  const cap_nec = hypo_total;
+
+  function apportManquant(cap_cible) {
+    return Math.max(0, (val_venale - cap_cible) - fp_effectifs);
+  }
+  const manque33 = apportManquant(cap33);
+  const manque35 = apportManquant(cap35);
+
+  function setCapVal(id, val, ok) {
+    const el = document.getElementById(id);
+    el.textContent = fmtCHF(val) + (ok === true ? ' ✅' : ok === false ? ' ❌' : '');
+    el.className = 'cap-value' + (ok === true ? ' ok' : ok === false ? ' nok' : '');
+  }
+  setCapVal('cap_max_33',  cap33,  cap33  >= cap_nec);
+  setCapVal('cap_max_35',  cap35,  cap35  >= cap_nec);
+  setCapVal('cap_max_ltv', cap_ltv, cap_ltv >= cap_nec);
+  document.getElementById('cap_necessaire').textContent = fmtCHF(cap_nec);
+
+  const el33 = document.getElementById('cap_manque_33');
+  const el35 = document.getElementById('cap_manque_35');
+  if (manque33 <= 0) { el33.textContent = '✅ Aucun'; el33.className = 'cap-value ok'; }
+  else { el33.textContent = '❌ ' + fmtCHF(manque33); el33.className = 'cap-value nok'; }
+  if (manque35 <= 0) { el35.textContent = '✅ Aucun'; el35.className = 'cap-value ok'; }
+  else { el35.textContent = '❌ ' + fmtCHF(manque35); el35.className = 'cap-value nok'; }
+
+  // ── 9. BILAN MENSUEL & AFFORDABILITY DISPLAY ──
+  function setId(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+
+  setId('b_int_r', fmtCHF(aff_r.int_an/12)); setId('b_int_t', fmtCHF(aff_t.int_an/12));
+  setId('b_am_r',  fmtCHF(aff_r.amort/12));  setId('b_am_t',  fmtCHF(aff_t.amort/12));
+  setId('b_chg_r', fmtCHF(aff_r.chg/12));    setId('b_chg_t', fmtCHF(aff_t.chg/12));
+  setId('b_tot_r', fmtCHF(aff_r.tot_an/12)); setId('b_tot_t', fmtCHF(aff_t.tot_an/12));
+  setId('b_rev_r', fmtCHF(rev_mensuel));      setId('b_rev_t', fmtCHF(rev_mensuel));
+  setId('b_eff_r', fmtPct(aff_r.ratio*100));  setId('b_eff_t', fmtPct(aff_t.ratio*100));
+
+  setId('a_taux_r', fmtPct(taux_reel*100)); setId('a_taux_t', fmtPct(TAUX_THEO*100));
+  setId('a_int_r', fmtCHF(aff_r.int_an)); setId('a_int_t', fmtCHF(aff_t.int_an));
+  setId('a_am_r',  fmtCHF(aff_r.amort));  setId('a_am_t',  fmtCHF(aff_t.amort));
+  setId('a_chg_r', fmtCHF(aff_r.chg));    setId('a_chg_t', fmtCHF(aff_t.chg));
+  setId('a_tot_r', fmtCHF(aff_r.tot_an)); setId('a_tot_t', fmtCHF(aff_t.tot_an));
+  setId('a_rat_r', fmtPct(aff_r.ratio*100)); setId('a_rat_t', fmtPct(aff_t.ratio*100));
+
+  // ── 10. STRUCTURE ──
+  setId('r_vv',      fmtCHF(val_venale));
+  setId('r_cash_net',fmtCHF(fp_cash_net) + (frais_ok ? ' ✅' : ' ❌'));
+  setId('r_fp_eff',  fmtCHF(fp_effectifs));
+  setId('r_fp_durs', fmtCHF(fp_durs));
+  setId('r_hypo_tot',fmtCHF(hypo_total));
+  setId('r_hypo1',   fmtCHF(hypo1));
+  setId('r_hypo2',   fmtCHF(hypo2));
+  setId('r_ltv',     fmtPct(ltv_nominale*100) + ' / eff. ' + fmtPct(ltv_effective*100) + (ltv_ok ? ' ✅' : ' ❌'));
+  setId('r_fp_pct',  fmtPct(fp_durs_pct*100) + (fp_durs_ok ? ' ✅' : ' ❌'));
+  setId('r_brut',    fmtCHF(revenu_base));
+  setId('r_mens',    fmtCHF(rev_mensuel));
+  setId('r_prix',    fmtCHF(prix_achat));
+  setId('r_mut',     fmtCHF(droits_mut));
+  setId('r_not',     fmtCHF(frais_not + frais_reg));
+  setId('r_frais',   fmtCHF(total_frais));
+  setId('r_cout',    fmtCHF(cout_total));
+  setId('r_fp_tot',  fmtCHF(fp_cash + lpp_retrait + p3_retrait));
+
+  // ── 11. IMPACT FISCAL ──
+  const imp_lpp = calcImpotVD(lpp_montant);
+  const imp_p3  = calcImpotVD(p3_montant);
+  const imp_cum = calcImpotVD(lpp_montant + p3_montant);
+
+  function setFisc(sfx, montant, impot) {
+    setId('f_' + sfx + '_m', montant > 0 ? fmtCHF(montant) : '—');
+    setId('f_' + sfx + '_i', montant > 0 ? fmtCHF(impot) : '—');
+    setId('f_' + sfx + '_t', montant > 0 ? fmtPct(impot/montant*100) : '—');
+    setId('f_' + sfx + '_n', montant > 0 ? fmtCHF(montant - impot) : '—');
+  }
+  setFisc('lpp', lpp_montant, imp_lpp);
+  setFisc('p3',  p3_montant,  imp_p3);
+  setFisc('cum', lpp_montant + p3_montant, imp_cum);
+
+  // ── 12. ANALYSE RETRAIT vs NANTISSEMENT ──
+  const r_lpp = fmtNum(document.getElementById('lpp_rendement').value) / 100;
+  const r_p3  = fmtNum(document.getElementById('pilier3_rendement').value) / 100;
+
+  document.getElementById('ana_taux_legend').textContent =
+    `Taux rendement : LPP ${fmtPct(r_lpp*100)} / an | 3ème pilier ${fmtPct(r_p3*100)} / an | Taux réel ${fmtPct(taux_reel*100)} / an`;
+
+  function analysPilier(montant, r, impot, sfx) {
+    if (montant <= 0) {
+      ['m','ei','r','d','i','s','v'].forEach(k => setId('ana_' + sfx + '_' + k, '—'));
+      return;
+    }
+    const eco_int = montant * taux_reel;
+    const rend    = montant * r;
+    const delta   = eco_int - rend;
+    const seuil   = delta > 0 ? (impot / delta).toFixed(1) + ' ans' : (delta < 0 ? 'Jamais' : '—');
+    let verdict, vclass;
+    if (delta > 0 && impot > 0) {
+      const s = impot / delta;
+      if (s <= 5)       { verdict = '✅ Retrait recommandé (<5 ans)'; vclass = 'verdict-ok'; }
+      else if (s <= 10) { verdict = '⚠️ Retrait avantageux (5–10 ans)'; vclass = 'verdict-warn'; }
+      else if (s <= 15) { verdict = '🔶 Long à amortir (10–15 ans)'; vclass = 'verdict-warn'; }
+      else              { verdict = '❌ Nantissement préférable (>15 ans)'; vclass = 'verdict-nok'; }
+    } else if (delta > 0 && impot === 0) {
+      verdict = '✅ Retrait sans coût fiscal'; vclass = 'verdict-ok';
+    } else {
+      verdict = '✅ Nantissement toujours préférable'; vclass = 'verdict-ok';
+    }
+    const sign = delta >= 0 ? '+' : '';
+    setId('ana_' + sfx + '_m',  fmtCHF(montant));
+    setId('ana_' + sfx + '_ei', fmtCHF(eco_int) + '/an');
+    setId('ana_' + sfx + '_r',  fmtCHF(rend) + '/an');
+    setId('ana_' + sfx + '_d',  sign + fmtCHF(delta) + '/an');
+    setId('ana_' + sfx + '_i',  fmtCHF(impot));
+    setId('ana_' + sfx + '_s',  seuil);
+    const vel = document.getElementById('ana_' + sfx + '_v');
+    if (vel) { vel.textContent = verdict; vel.className = vclass; }
+  }
+
+  analysPilier(lpp_montant, r_lpp, imp_lpp, 'lpp');
+  analysPilier(p3_montant,  r_p3,  imp_p3,  'p3');
+  const cum_montant = lpp_montant + p3_montant;
+  const r_cum = cum_montant > 0 ? (lpp_montant*r_lpp + p3_montant*r_p3) / cum_montant : 0;
+  analysPilier(cum_montant, r_cum, imp_cum, 'cum');
+
+  showToast('Calcul effectué ✓');
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// APPLY CASH MIN
+// ═══════════════════════════════════════════════════════════════════════
+function applyCashMin() {
+  if (window._cashMinVal) {
+    document.getElementById('fp_cash').value = fmtInput(window._cashMinVal);
+    calculate();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// LOCALSTORAGE PERSISTENCE
+// ═══════════════════════════════════════════════════════════════════════
+const FIELDS = ['salaire_principal','salaire_conjoint','bonus_principal','bonus_conjoint',
+  'revenus_locatifs','prix_achat','valeur_venale','frais_mutation','frais_notaire',
+  'frais_registre','fp_cash','lpp_montant','lpp_rendement','pilier3_montant',
+  'pilier3_rendement','taux_reel','duree_credit','charges_reelles_annuelles'];
+const RADIOS = ['mode_bonus','type_bien','lpp_mode','p3_mode','type_hypo','charges_mode'];
+
+function getState() {
+  const state = { conjoint_actif: conjointActive };
+  FIELDS.forEach(id => { state[id] = document.getElementById(id).value; });
+  RADIOS.forEach(name => { state[name] = getRadio(name); });
+  return state;
+}
+
+function applyState(state) {
+  if (!state) return;
+  FIELDS.forEach(id => {
+    if (state[id] !== undefined) document.getElementById(id).value = state[id];
+  });
+  RADIOS.forEach(name => { if (state[name]) setRadio(name, state[name]); });
+  if (state.conjoint_actif && !conjointActive) toggleConjoint();
+  else if (!state.conjoint_actif && conjointActive) toggleConjoint();
+}
+
+function saveState() {
+  try { localStorage.setItem('hypo_ch_vd', JSON.stringify(getState())); } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem('hypo_ch_vd');
+    if (raw) applyState(JSON.parse(raw));
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// EXPORT / IMPORT JSON
+// ═══════════════════════════════════════════════════════════════════════
+function exportJSON() {
+  const state = getState();
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'hypotheque_config.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Config exportée ✓');
+}
+
+function importJSON(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      applyState(JSON.parse(e.target.result));
+      saveState();
+      calculate();
+      showToast('Config importée ✓');
+    } catch(err) { showToast('Erreur import JSON'); }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════════════════════
+function resetAll() {
+  if (!confirm('Réinitialiser tous les champs ?')) return;
+  localStorage.removeItem('hypo_ch_vd');
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  initRadioGroups();
+  loadState();
+  calculate();
+});
+</script>
+</body>
+</html>
