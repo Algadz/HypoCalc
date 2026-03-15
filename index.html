@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulateur Hypothécaire Suisse — Canton de Vaud</title>
+<title>Swiss Mortgage Simulator — Vaud</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+
 /* ── Variables ────────────────────────────────────────────────────────── */
 :root {
   --bg:       #eef1f5;
@@ -44,7 +45,7 @@ input, select { font-family: var(--font); }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 50px;
+  height: 44px;
   position: sticky; top: 0; z-index: 100;
   box-shadow: 0 2px 8px rgba(0,0,0,.2);
 }
@@ -74,7 +75,7 @@ input, select { font-family: var(--font); }
 #tabs-nav {
   display: flex; background: var(--card); border-bottom: 2px solid var(--border);
   overflow-x: auto; scrollbar-width: none;
-  position: sticky; top: 50px; z-index: 99;
+  position: sticky; top: 44px; z-index: 99;
   box-shadow: 0 2px 6px rgba(0,0,0,.06);
 }
 #tabs-nav::-webkit-scrollbar { display: none; }
@@ -278,341 +279,496 @@ input, select { font-family: var(--font); }
   transition: opacity .3s; pointer-events: none; z-index: 999;
 }
 #toast.show { opacity: 1; }
+
+/* Language selector */
+#lang-select{padding:4px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:600;cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,.6)'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 7px center;padding-right:22px;transition:background-color .15s}
+#lang-select:hover{background-color:rgba(255,255,255,.2)}
+#lang-select option{background:#1a3a5c;color:#fff}
+
 </style>
 </head>
 <body>
 
-<!-- ── Header ─────────────────────────────────────────────────────────── -->
+<!-- Header -->
 <div id="header">
   <div class="header-left">
-    <div id="header-h1" style="font-size:14px;font-weight:600;color:#fff">🏠 Hypocalc</div>
+    <div id="header-h1" style="font-size:14px;font-weight:600;color:#fff">🏠 <span data-i18n="app_title">HypoCalc</span></div>
   </div>
   <div class="header-btns">
-    <button class="btn-header" onclick="exportJSON()">📄 <span>Export</span></button>
-    <button class="btn-header" onclick="document.getElementById('importFile').click()">📂 <span>Import</span></button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
-    <button class="btn-header btn-warn" onclick="resetAll()" style="border-color:rgba(255,120,120,.4)">🔄</button>
+    <select id="lang-select" onchange="setLang(this.value)">
+      <option value="en">EN</option>
+      <option value="fr">FR</option>
+      <option value="de">DE</option>
+    </select>
     <div class="sep-v"></div>
-    <button class="btn-calc" onclick="calculate()">⚡ CALCULER</button>
+    <button class="btn-header" onclick="exportJSON()">📄 <span data-i18n="btn_export">Export</span></button>
+    <button class="btn-header" onclick="document.getElementById('importFile').click()">📂 <span data-i18n="btn_import">Import</span></button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="btn-header" onclick="resetAll()" style="border:1px solid rgba(255,120,120,.4);background:transparent;color:rgba(255,200,200,.9)" title="Reset">🔄</button>
+    <div class="sep-v"></div>
+    <button class="btn-calc" onclick="calculate()">⚡ <span data-i18n="btn_calc">CALCULATE</span></button>
   </div>
 </div>
 
-<!-- ── Tabs nav ────────────────────────────────────────────────────────── -->
+<!-- Tabs -->
 <div id="tabs-nav">
-  <button class="tab-btn active" onclick="showTab(0)">① Revenus</button>
-  <button class="tab-btn" onclick="showTab(1)">② Bien &amp; Fonds propres</button>
-  <button class="tab-btn" onclick="showTab(2)">③ Hypothèque &amp; Taux</button>
-  <button class="tab-btn" onclick="showTab(3)">④ Résultats &amp; Bilan</button>
+  <button class="tab-btn active" onclick="showTab(0)" data-i18n="tab1">① Income</button>
+  <button class="tab-btn" onclick="showTab(1)" data-i18n="tab2">② Property &amp; Equity</button>
+  <button class="tab-btn" onclick="showTab(2)" data-i18n="tab3">③ Mortgage &amp; Rates</button>
+  <button class="tab-btn" onclick="showTab(3)" data-i18n="tab4">④ Results &amp; Summary</button>
 </div>
 
-<!-- ── Content ────────────────────────────────────────────────────────── -->
 <div id="tabs-content">
 
-<!-- ════════════════════════════════════ TAB 1 : REVENUS ══════════════ -->
+<!-- ═══ TAB 1 ═══ -->
 <div class="tab-pane active" id="tab0">
-
   <div class="card">
-    <div class="card-title">Salaires bruts annuels</div>
+    <div class="card-title" data-i18n="c_salaires">Annual gross salaries</div>
     <div class="form-grid">
-      <label class="form-label">Salaire brut annuel — demandeur principal (CHF)</label>
+      <label class="form-label" data-i18n="l_sal_main">Annual gross salary — main applicant (CHF)</label>
       <input class="form-input" id="salaire_principal" value="150'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
-
       <div class="toggle-row" style="grid-column:1/-1">
         <div class="toggle" id="tog_conjoint" onclick="toggleConjoint()"></div>
-        <span class="toggle-label">Inclure salaire conjoint / partenaire</span>
+        <span class="toggle-label" data-i18n="l_incl">Include partner / spouse salary</span>
       </div>
-
-      <label class="form-label" id="lbl_conjoint" style="opacity:.4">Salaire brut annuel — conjoint (CHF)</label>
+      <label class="form-label" id="lbl_conjoint" style="opacity:.4" data-i18n="l_sal_part">Annual gross salary — partner (CHF)</label>
       <input class="form-input" id="salaire_conjoint" value="0" disabled style="opacity:.4" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
     </div>
   </div>
-
   <div class="card">
-    <div class="card-title">Bonus</div>
-    <div style="margin-bottom:8px;font-size:12px;color:var(--muted)">Traitement du bonus :</div>
+    <div class="card-title" data-i18n="c_bonus">Bonus</div>
+    <div style="margin-bottom:8px;font-size:12px;color:var(--muted)" data-i18n="l_bon_how">Bonus treatment:</div>
     <div class="radio-group" id="rg_bonus">
-      <label class="radio-option checked" data-val="ignorer"><input type="radio" name="mode_bonus" value="ignorer" checked><div class="radio-dot"></div>Ignorer</label>
-      <label class="radio-option" data-val="moy3ans"><input type="radio" name="mode_bonus" value="moy3ans"><div class="radio-dot"></div>Moyenne 3 ans (saisir la moyenne)</label>
-      <label class="radio-option" data-val="100pct"><input type="radio" name="mode_bonus" value="100pct"><div class="radio-dot"></div>100% du bonus récent</label>
+      <label class="radio-option checked" data-val="ignorer"><input type="radio" name="mode_bonus" value="ignorer" checked><div class="radio-dot"></div><span data-i18n="l_bon_ign">Ignore</span></label>
+      <label class="radio-option" data-val="moy3ans"><input type="radio" name="mode_bonus" value="moy3ans"><div class="radio-dot"></div><span data-i18n="l_bon_avg">3-year average</span></label>
+      <label class="radio-option" data-val="100pct"><input type="radio" name="mode_bonus" value="100pct"><div class="radio-dot"></div><span data-i18n="l_bon_100">100% of latest bonus</span></label>
     </div>
-    <div class="note">Les banques suisses retiennent usuellement la moyenne des 3 dernières années à 100%, ou parfois 66% du bonus le plus récent selon les établissements (UBS, Raiffeisen, BCVS).</div>
+    <div class="note" data-i18n="n_bonus">Swiss banks typically use the 3-year average at 100%.</div>
     <div class="form-grid" style="margin-top:8px">
-      <label class="form-label">Bonus annuel brut — principal (CHF)</label>
+      <label class="form-label" data-i18n="l_bon_main">Annual gross bonus — main applicant (CHF)</label>
       <input class="form-input" id="bonus_principal" value="0" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
-      <label class="form-label" id="lbl_bonus_conjoint" style="opacity:.4">Bonus annuel brut — conjoint (CHF)</label>
+      <label class="form-label" id="lbl_bonus_conjoint" style="opacity:.4" data-i18n="l_bon_part">Annual gross bonus — partner (CHF)</label>
       <input class="form-input" id="bonus_conjoint" value="0" disabled style="opacity:.4" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
     </div>
   </div>
-
   <div class="card">
-    <div class="card-title">Revenus complémentaires</div>
+    <div class="card-title" data-i18n="c_add">Additional income</div>
     <div class="form-grid">
-      <label class="form-label">Revenus locatifs nets annuels (CHF)</label>
+      <label class="form-label" data-i18n="l_rent">Net rental income per year (CHF)</label>
       <input class="form-input" id="revenus_locatifs" value="0" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
     </div>
   </div>
+</div>
 
-</div><!-- end tab0 -->
-
-<!-- ══════════════════════════════ TAB 2 : BIEN & FP ═════════════════ -->
+<!-- ═══ TAB 2 ═══ -->
 <div class="tab-pane" id="tab1">
-
   <div class="card">
-    <div class="card-title">Bien immobilier</div>
+    <div class="card-title" data-i18n="c_prop">Property</div>
     <div class="form-grid">
-      <label class="form-label">Prix d'achat (CHF)</label>
+      <label class="form-label" data-i18n="l_price">Purchase price (CHF)</label>
       <input class="form-input" id="prix_achat" value="900'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
-      <label class="form-label">Valeur vénale estimée (CHF) — si différente</label>
+      <label class="form-label" data-i18n="l_mv">Estimated market value (CHF) — if different</label>
       <input class="form-input" id="valeur_venale" value="900'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
     </div>
-    <div style="margin-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px">Type de bien :</div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px" data-i18n="l_ptype">Property type:</div>
     <div class="radio-group" id="rg_type_bien">
       <label class="radio-option checked" data-val="PPE"><input type="radio" name="type_bien" value="PPE" checked><div class="radio-dot"></div>PPE</label>
-      <label class="radio-option" data-val="Villa"><input type="radio" name="type_bien" value="Villa"><div class="radio-dot"></div>Villa</label>
-      <label class="radio-option" data-val="Immeuble"><input type="radio" name="type_bien" value="Immeuble"><div class="radio-dot"></div>Immeuble</label>
+      <label class="radio-option" data-val="Villa"><input type="radio" name="type_bien" value="Villa"><div class="radio-dot"></div><span data-i18n="l_villa">Villa</span></label>
+      <label class="radio-option" data-val="Immeuble"><input type="radio" name="type_bien" value="Immeuble"><div class="radio-dot"></div><span data-i18n="l_imm">Building</span></label>
     </div>
   </div>
-
   <div class="card">
-    <div class="card-title">Frais d'acquisition (Canton de Vaud)</div>
+    <div class="card-title" data-i18n="c_acq">Acquisition costs (Canton de Vaud)</div>
     <div class="form-grid narrow">
-      <label class="form-label">Droits de mutation VD (%)</label>
+      <label class="form-label" data-i18n="l_mut">Transfer tax VD (%)</label>
       <input class="form-input" id="frais_mutation" value="2.2">
-      <label class="form-label">Frais notaire (%)</label>
+      <label class="form-label" data-i18n="l_not">Notary fees (%)</label>
       <input class="form-input" id="frais_notaire" value="0.5">
-      <label class="form-label">Frais registre foncier (%)</label>
+      <label class="form-label" data-i18n="l_reg">Land registry (%)</label>
       <input class="form-input" id="frais_registre" value="0.3">
     </div>
-    <div id="frais_total_label" style="margin-top:10px;font-size:13px;font-weight:600;color:var(--accent)">Total frais : —</div>
+    <div id="frais_total_label" style="margin-top:10px;font-size:13px;font-weight:600;color:var(--accent)">—</div>
   </div>
-
   <div class="card">
-    <div class="card-title">Fonds propres &amp; Structure</div>
-
+    <div class="card-title" data-i18n="c_eq">Equity &amp; Structure</div>
     <div class="form-grid" style="margin-bottom:4px">
-      <label class="form-label">Fonds propres cash / épargne (CHF)</label>
+      <label class="form-label" data-i18n="l_cash">Cash equity / savings (CHF)</label>
       <input class="form-input" id="fp_cash" value="100'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-      <div id="cash_min_label" style="font-size:12px;font-weight:600;color:var(--warn)">Cash minimum requis : —</div>
-      <button class="btn-apply" onclick="applyCashMin()">⬆ Appliquer le minimum</button>
+      <div id="cash_min_label" style="font-size:12px;font-weight:600;color:var(--warn)">—</div>
+      <button class="btn-apply" onclick="applyCashMin()"><span data-i18n="l_applymin">⬆ Apply minimum</span></button>
     </div>
-
-    <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:4px;font-size:12px;color:var(--muted)">2ème pilier LPP</div>
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:4px;font-size:12px;color:var(--muted)" data-i18n="c_lpp">2nd pillar (LPP)</div>
     <div class="form-grid" style="margin-bottom:6px">
-      <label class="form-label">Montant disponible (CHF)</label>
+      <label class="form-label" data-i18n="l_avail">Available amount (CHF)</label>
       <input class="form-input" id="lpp_montant" value="50'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
-      <label class="form-label">Rendement annuel estimé (%)</label>
+      <label class="form-label" data-i18n="l_yield">Estimated annual return (%)</label>
       <input class="form-input" id="lpp_rendement" value="2.50">
     </div>
     <div class="radio-group" id="rg_lpp_mode">
-      <label class="radio-option" data-val="retrait"><input type="radio" name="lpp_mode" value="retrait"><div class="radio-dot"></div>Retrait (réduit capital)</label>
-      <label class="radio-option checked" data-val="nantissement"><input type="radio" name="lpp_mode" value="nantissement" checked><div class="radio-dot"></div>Nantissement (garantie)</label>
+      <label class="radio-option" data-val="retrait"><input type="radio" name="lpp_mode" value="retrait"><div class="radio-dot"></div><span data-i18n="l_ret">Withdrawal (reduces loan)</span></label>
+      <label class="radio-option checked" data-val="nantissement"><input type="radio" name="lpp_mode" value="nantissement" checked><div class="radio-dot"></div><span data-i18n="l_nant">Pledge (collateral)</span></label>
     </div>
-
-    <div style="border-top:1px solid var(--border);padding-top:10px;margin:10px 0 4px;font-size:12px;color:var(--muted)">3ème pilier (3a/3b)</div>
+    <div style="border-top:1px solid var(--border);padding-top:10px;margin:10px 0 4px;font-size:12px;color:var(--muted)" data-i18n="c_p3">3rd pillar (3a/3b)</div>
     <div class="form-grid" style="margin-bottom:6px">
-      <label class="form-label">Montant disponible (CHF)</label>
+      <label class="form-label" data-i18n="l_avail">Available amount (CHF)</label>
       <input class="form-input" id="pilier3_montant" value="30'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
-      <label class="form-label">Rendement annuel estimé (%)</label>
+      <label class="form-label" data-i18n="l_yield">Estimated annual return (%)</label>
       <input class="form-input" id="pilier3_rendement" value="3.00">
     </div>
     <div class="radio-group" id="rg_p3_mode">
-      <label class="radio-option" data-val="retrait"><input type="radio" name="p3_mode" value="retrait"><div class="radio-dot"></div>Retrait (réduit capital)</label>
-      <label class="radio-option checked" data-val="nantissement"><input type="radio" name="p3_mode" value="nantissement" checked><div class="radio-dot"></div>Nantissement (garantie)</label>
+      <label class="radio-option" data-val="retrait"><input type="radio" name="p3_mode" value="retrait"><div class="radio-dot"></div><span data-i18n="l_ret">Withdrawal (reduces loan)</span></label>
+      <label class="radio-option checked" data-val="nantissement"><input type="radio" name="p3_mode" value="nantissement" checked><div class="radio-dot"></div><span data-i18n="l_nant">Pledge (collateral)</span></label>
     </div>
-
-    <div class="note" style="margin-top:10px">Règles FINMA : LTV effective ≤ 80% | FP durs (hors LPP) ≥ 10% de la valeur vénale.<br>Les frais d'acquisition doivent obligatoirement être couverts par du cash.<br>Le nantissement permet d'emprunter au-delà de 80% LTV nominal — mais augmente l'hypothèque et donc le taux d'endettement.</div>
+    <div class="note" style="margin-top:10px" data-i18n="n_finma">FINMA rules note.</div>
     <div id="finma_summary" class="status-bar"></div>
   </div>
+</div>
 
-</div><!-- end tab1 -->
-
-<!-- ══════════════════════════════ TAB 3 : HYPOTHÈQUE ════════════════ -->
+<!-- ═══ TAB 3 ═══ -->
 <div class="tab-pane" id="tab2">
-
   <div class="card">
-    <div class="card-title">Taux &amp; Type de crédit</div>
+    <div class="card-title" data-i18n="c_rate">Rate &amp; Mortgage type</div>
     <div class="form-grid narrow">
-      <label class="form-label">Taux d'intérêt réel négocié (%)</label>
+      <label class="form-label" data-i18n="l_rate">Negotiated actual rate (%)</label>
       <input class="form-input" id="taux_reel" value="1.80">
-      <label class="form-label">Durée du crédit (années)</label>
+      <label class="form-label" data-i18n="l_dur">Loan duration (years)</label>
       <input class="form-input" id="duree_credit" value="25">
     </div>
-    <div style="margin-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px">Type de crédit :</div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px" data-i18n="l_mtype">Mortgage type:</div>
     <div class="radio-group" id="rg_type_hypo">
-      <label class="radio-option checked" data-val="fixe"><input type="radio" name="type_hypo" value="fixe" checked><div class="radio-dot"></div>Fixe</label>
+      <label class="radio-option checked" data-val="fixe"><input type="radio" name="type_hypo" value="fixe" checked><div class="radio-dot"></div><span data-i18n="l_fixed">Fixed</span></label>
       <label class="radio-option" data-val="saron"><input type="radio" name="type_hypo" value="saron"><div class="radio-dot"></div>SARON</label>
-      <label class="radio-option" data-val="mixte"><input type="radio" name="type_hypo" value="mixte"><div class="radio-dot"></div>Mixte</label>
+      <label class="radio-option" data-val="mixte"><input type="radio" name="type_hypo" value="mixte"><div class="radio-dot"></div><span data-i18n="l_mixed">Mixed</span></label>
     </div>
-    <div class="note" style="margin-top:10px">Le taux théorique standard utilisé par les banques suisses pour le test d'affordability est de 5%, indépendamment du taux réel négocié. Les deux scénarios sont calculés en parallèle dans les résultats.</div>
+    <div class="note" style="margin-top:10px" data-i18n="n_theo">Theoretical rate note.</div>
   </div>
-
   <div class="card">
-    <div class="card-title">Charges du bien</div>
+    <div class="card-title" data-i18n="c_costs">Property running costs</div>
     <div class="radio-group" id="rg_charges_mode" style="margin-bottom:10px">
-      <label class="radio-option checked" data-val="forfait"><input type="radio" name="charges_mode" value="forfait" checked><div class="radio-dot"></div>Forfait 1% valeur vénale / an (bancaire)</label>
-      <label class="radio-option" data-val="reelles"><input type="radio" name="charges_mode" value="reelles"><div class="radio-dot"></div>Charges réelles</label>
+      <label class="radio-option checked" data-val="forfait"><input type="radio" name="charges_mode" value="forfait" checked><div class="radio-dot"></div><span data-i18n="l_forfait">Standard 1% of market value / year</span></label>
+      <label class="radio-option" data-val="reelles"><input type="radio" name="charges_mode" value="reelles"><div class="radio-dot"></div><span data-i18n="l_reelles">Actual costs</span></label>
     </div>
     <div class="form-grid">
-      <label class="form-label">Charges réelles annuelles (CHF)</label>
+      <label class="form-label" data-i18n="l_costs_ann">Actual annual costs (CHF)</label>
       <input class="form-input" id="charges_reelles_annuelles" value="0" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
     </div>
   </div>
+</div>
 
-</div><!-- end tab2 -->
-
-<!-- ════════════════════════════════ TAB 4 : RÉSULTATS ══════════════ -->
+<!-- ═══ TAB 4 ═══ -->
 <div class="tab-pane" id="tab3">
-
-  <!-- Verdicts -->
   <div class="card">
-    <div class="card-title">Verdict d'affordability</div>
+    <div class="card-title" data-i18n="c_verdict">Affordability verdict</div>
     <div class="verdict-grid">
       <div class="verdict-badge" id="badge_reel">
-        <div class="v-label">Taux réel</div>
+        <div class="v-label" data-i18n="l_rate_real">Actual rate</div>
         <div class="v-value" id="v_reel">—</div>
       </div>
       <div class="verdict-badge" id="badge_theo">
-        <div class="v-label">Taux théorique 5%</div>
+        <div class="v-label" data-i18n="l_rate_theo">Theoretical rate 5%</div>
         <div class="v-value" id="v_theo">—</div>
       </div>
     </div>
-    <div style="font-size:11px;color:var(--muted);margin-top:6px">≤33% ✅ Standard &nbsp;|&nbsp; ≤35% ⚠️ Profils solides &nbsp;|&nbsp; ≤38% 🔶 Cas exceptionnels &nbsp;|&nbsp; >38% ❌ Refus</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px" data-i18n="l_thresh">≤33% ✅ Standard | ≤35% ⚠️ Strong profiles | ≤38% 🔶 Exceptional | >38% ❌ Refused</div>
   </div>
 
-  <!-- Capacité d'emprunt -->
   <div class="card">
-    <div class="card-title">Capacité d'emprunt — Synthèse</div>
+    <div class="card-title" data-i18n="c_cap">Borrowing capacity — Summary</div>
     <div class="cap-grid">
-      <span class="cap-label">Emprunt max selon revenus (33%, test 5%)</span>
+      <span class="cap-label" data-i18n="l_cap33">Max loan based on income (33%, 5% test)</span>
       <span class="cap-value" id="cap_max_33">—</span>
-      <span class="cap-label">Emprunt max selon revenus (35%, test 5%)</span>
+      <span class="cap-label" data-i18n="l_cap35">Max loan based on income (35%, 5% test)</span>
       <span class="cap-value" id="cap_max_35">—</span>
-      <span class="cap-label">Emprunt max LTV 80% + nantissement</span>
+      <span class="cap-label" data-i18n="l_cap_ltv">Max loan LTV 80% + pledge</span>
       <span class="cap-value" id="cap_max_ltv">—</span>
       <div class="cap-sep"></div>
-      <span class="cap-label" style="font-weight:600">Emprunt nécessaire avec votre apport</span>
+      <span class="cap-label" style="font-weight:600" data-i18n="l_cap_nec">Required loan with your equity</span>
       <span class="cap-value" id="cap_necessaire" style="color:var(--navy)">—</span>
       <div class="cap-sep"></div>
-      <span class="cap-label">Apport cash manquant pour 33%</span>
+      <span class="cap-label" data-i18n="l_miss33">Missing equity for 33%</span>
       <span class="cap-value" id="cap_manque_33">—</span>
-      <span class="cap-label">Apport cash manquant pour 35%</span>
+      <span class="cap-label" data-i18n="l_miss35">Missing equity for 35%</span>
       <span class="cap-value" id="cap_manque_35">—</span>
     </div>
   </div>
 
-  <!-- Bilan mensuel + Affordability -->
   <div class="dual-grid">
     <div class="card">
-      <div class="card-title">Bilan mensuel</div>
+      <div class="card-title" data-i18n="c_monthly">Monthly summary</div>
       <table class="cmp-table">
-        <thead><tr><th></th><th class="col-r">Taux réel</th><th class="col-t">5% théo.</th></tr></thead>
+        <thead><tr><th></th><th class="col-r" data-i18n="l_rate_real">Actual</th><th class="col-t">5% <span data-i18n="l_theo_s">theo.</span></th></tr></thead>
         <tbody>
-          <tr><td>Intérêts / mois</td><td id="b_int_r">—</td><td id="b_int_t">—</td></tr>
-          <tr><td>Amortissement / mois</td><td id="b_am_r">—</td><td id="b_am_t">—</td></tr>
-          <tr><td>Charges / mois</td><td id="b_chg_r">—</td><td id="b_chg_t">—</td></tr>
-          <tr class="total"><td>Total mensuel</td><td id="b_tot_r">—</td><td id="b_tot_t">—</td></tr>
-          <tr><td>Revenu brut mensuel</td><td id="b_rev_r">—</td><td id="b_rev_t">—</td></tr>
-          <tr><td>Taux d'effort</td><td id="b_eff_r">—</td><td id="b_eff_t">—</td></tr>
+          <tr><td data-i18n="l_int_m">Interest / month</td><td id="b_int_r">—</td><td id="b_int_t">—</td></tr>
+          <tr><td data-i18n="l_am_m">Amortisation / month</td><td id="b_am_r">—</td><td id="b_am_t">—</td></tr>
+          <tr><td data-i18n="l_chg_m">Running costs / month</td><td id="b_chg_r">—</td><td id="b_chg_t">—</td></tr>
+          <tr class="total"><td data-i18n="l_tot_m">Total monthly</td><td id="b_tot_r">—</td><td id="b_tot_t">—</td></tr>
+          <tr><td data-i18n="l_rev_m">Gross monthly income</td><td id="b_rev_r">—</td><td id="b_rev_t">—</td></tr>
+          <tr><td data-i18n="l_effort">Debt ratio</td><td id="b_eff_r">—</td><td id="b_eff_t">—</td></tr>
         </tbody>
       </table>
     </div>
     <div class="card">
-      <div class="card-title">Affordability annuelle</div>
+      <div class="card-title" data-i18n="c_aff">Annual affordability</div>
       <table class="cmp-table">
-        <thead><tr><th></th><th class="col-r">Taux réel</th><th class="col-t">5% théo.</th></tr></thead>
+        <thead><tr><th></th><th class="col-r" data-i18n="l_rate_real">Actual</th><th class="col-t">5% <span data-i18n="l_theo_s">theo.</span></th></tr></thead>
         <tbody>
-          <tr><td>Taux appliqué</td><td id="a_taux_r">—</td><td id="a_taux_t">—</td></tr>
-          <tr><td>Intérêts annuels</td><td id="a_int_r">—</td><td id="a_int_t">—</td></tr>
-          <tr><td>Amortissement / an</td><td id="a_am_r">—</td><td id="a_am_t">—</td></tr>
-          <tr><td>Charges / an</td><td id="a_chg_r">—</td><td id="a_chg_t">—</td></tr>
-          <tr class="total"><td>Total charges / an</td><td id="a_tot_r">—</td><td id="a_tot_t">—</td></tr>
-          <tr><td>Taux d'endettement</td><td id="a_rat_r">—</td><td id="a_rat_t">—</td></tr>
+          <tr><td data-i18n="l_rate_app">Rate applied</td><td id="a_taux_r">—</td><td id="a_taux_t">—</td></tr>
+          <tr><td data-i18n="l_int_a">Annual interest</td><td id="a_int_r">—</td><td id="a_int_t">—</td></tr>
+          <tr><td data-i18n="l_am_a">Amortisation / year</td><td id="a_am_r">—</td><td id="a_am_t">—</td></tr>
+          <tr><td data-i18n="l_chg_a">Running costs / year</td><td id="a_chg_r">—</td><td id="a_chg_t">—</td></tr>
+          <tr class="total"><td data-i18n="l_tot_a">Total charges / year</td><td id="a_tot_r">—</td><td id="a_tot_t">—</td></tr>
+          <tr><td data-i18n="l_debt">Debt ratio</td><td id="a_rat_r">—</td><td id="a_rat_t">—</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Structure hypothécaire + Revenus -->
   <div class="dual-grid">
     <div class="card">
-      <div class="card-title">Structure hypothécaire</div>
+      <div class="card-title" data-i18n="c_struct">Mortgage structure</div>
       <table class="res-table">
-        <tr><td>Valeur vénale</td><td id="r_vv">—</td></tr>
-        <tr><td>Cash net après frais</td><td id="r_cash_net">—</td></tr>
-        <tr><td>FP effectifs</td><td id="r_fp_eff">—</td></tr>
-        <tr><td>FP durs (hors LPP)</td><td id="r_fp_durs">—</td></tr>
+        <tr><td data-i18n="l_vv">Market value</td><td id="r_vv">—</td></tr>
+        <tr><td data-i18n="l_cashnet">Cash net after acquisition costs</td><td id="r_cash_net">—</td></tr>
+        <tr><td data-i18n="l_fpeff">Effective equity</td><td id="r_fp_eff">—</td></tr>
+        <tr><td data-i18n="l_fphard">Hard equity (excl. LPP)</td><td id="r_fp_durs">—</td></tr>
         <tr class="separator"><td colspan="2"></td></tr>
-        <tr><td>Hypothèque totale</td><td id="r_hypo_tot">—</td></tr>
-        <tr><td>1ère hypothèque (≤65%)</td><td id="r_hypo1">—</td></tr>
-        <tr><td>2ème hypothèque (65–80%)</td><td id="r_hypo2">—</td></tr>
-        <tr><td>LTV nominale / effective</td><td id="r_ltv">—</td></tr>
-        <tr><td>FP durs / valeur vénale</td><td id="r_fp_pct">—</td></tr>
+        <tr><td data-i18n="l_htot">Total mortgage</td><td id="r_hypo_tot">—</td></tr>
+        <tr><td data-i18n="l_h1">1st mortgage (≤65%)</td><td id="r_hypo1">—</td></tr>
+        <tr><td data-i18n="l_h2">2nd mortgage (65–80%)</td><td id="r_hypo2">—</td></tr>
+        <tr><td data-i18n="l_ltv">LTV nominal / effective</td><td id="r_ltv">—</td></tr>
+        <tr><td data-i18n="l_fppt">Hard equity / market value</td><td id="r_fp_pct">—</td></tr>
       </table>
     </div>
     <div class="card">
-      <div class="card-title">Revenus &amp; Frais d'acquisition</div>
+      <div class="card-title" data-i18n="c_revcost">Income &amp; Acquisition costs</div>
       <table class="res-table">
-        <tr><td>Revenu brut annuel</td><td id="r_brut">—</td></tr>
-        <tr><td>Base de calcul mensuel</td><td id="r_mens">—</td></tr>
+        <tr><td data-i18n="l_bruta">Annual gross income</td><td id="r_brut">—</td></tr>
+        <tr><td data-i18n="l_brutm">Monthly gross income</td><td id="r_mens">—</td></tr>
         <tr class="separator"><td colspan="2"></td></tr>
-        <tr><td>Prix d'achat</td><td id="r_prix">—</td></tr>
-        <tr><td>Droits de mutation VD</td><td id="r_mut">—</td></tr>
-        <tr><td>Frais notaire + registre</td><td id="r_not">—</td></tr>
-        <tr><td>Total frais</td><td id="r_frais">—</td></tr>
-        <tr class="total"><td>Coût total</td><td id="r_cout">—</td></tr>
+        <tr><td data-i18n="l_price2">Purchase price</td><td id="r_prix">—</td></tr>
+        <tr><td data-i18n="l_mut2">Transfer tax VD</td><td id="r_mut">—</td></tr>
+        <tr><td data-i18n="l_not2">Notary + registry</td><td id="r_not">—</td></tr>
+        <tr><td data-i18n="l_ftot">Total acquisition costs</td><td id="r_frais">—</td></tr>
+        <tr class="total"><td data-i18n="l_ctot">Total cost</td><td id="r_cout">—</td></tr>
         <tr class="separator"><td colspan="2"></td></tr>
-        <tr><td>Total FP engagés</td><td id="r_fp_tot">—</td></tr>
+        <tr><td data-i18n="l_fptot">Total equity committed</td><td id="r_fp_tot">—</td></tr>
       </table>
     </div>
   </div>
 
-  <!-- Impact fiscal -->
   <div class="card">
-    <div class="card-title">Impact fiscal — Retraits hypothétiques (estimation VD)</div>
-    <div class="note">Taux réduit 1/5 barème ICC+IFD — résidence Lausanne, état civil seul. Calculé sur les montants complets, quelle que soit l'option choisie. Estimation indicative.</div>
+    <div class="card-title" data-i18n="c_fiscal">Tax impact — Hypothetical withdrawals</div>
+    <div class="note" data-i18n="n_fiscal">Reduced rate note.</div>
     <div style="overflow-x:auto;margin-top:8px">
       <table class="ana-table">
-        <thead><tr><th></th><th class="col-lpp">LPP</th><th class="col-p3">3ème pilier</th><th class="col-cum">Cumulé *</th></tr></thead>
+        <thead><tr><th></th><th class="col-lpp">LPP</th><th class="col-p3" data-i18n="l_p3col">3rd pillar</th><th class="col-cum" data-i18n="l_cumcol">Combined *</th></tr></thead>
         <tbody>
-          <tr><td>Montant retiré</td><td id="f_lpp_m">—</td><td id="f_p3_m">—</td><td id="f_cum_m">—</td></tr>
-          <tr><td>Impôt estimé</td><td id="f_lpp_i">—</td><td id="f_p3_i">—</td><td id="f_cum_i">—</td></tr>
-          <tr><td>Taux effectif</td><td id="f_lpp_t">—</td><td id="f_p3_t">—</td><td id="f_cum_t">—</td></tr>
-          <tr><td>Net après impôt</td><td id="f_lpp_n">—</td><td id="f_p3_n">—</td><td id="f_cum_n">—</td></tr>
+          <tr><td data-i18n="l_wamt">Amount withdrawn</td><td id="f_lpp_m">—</td><td id="f_p3_m">—</td><td id="f_cum_m">—</td></tr>
+          <tr><td data-i18n="l_taxest">Estimated tax</td><td id="f_lpp_i">—</td><td id="f_p3_i">—</td><td id="f_cum_i">—</td></tr>
+          <tr><td data-i18n="l_effrate">Effective rate</td><td id="f_lpp_t">—</td><td id="f_p3_t">—</td><td id="f_cum_t">—</td></tr>
+          <tr><td data-i18n="l_nettax">Net after tax</td><td id="f_lpp_n">—</td><td id="f_p3_n">—</td><td id="f_cum_n">—</td></tr>
         </tbody>
       </table>
     </div>
-    <div style="font-size:11px;color:var(--muted);margin-top:6px">* Montants cumulés si retrait LPP et 3ème pilier la même année.</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px" data-i18n="n_cum">* Combined amounts note.</div>
   </div>
 
-  <!-- Analyse retrait vs nantissement -->
   <div class="card">
-    <div class="card-title">Analyse comparative : Retrait vs Nantissement</div>
-    <div class="note">Delta annuel net = Économie d'intérêts (retrait) − Rendement perdu (nantissement). Positif → retrait plus avantageux. Le seuil de rentabilité indique combien d'années pour amortir le coût fiscal.</div>
+    <div class="card-title" data-i18n="c_ana">Comparative analysis: Withdrawal vs Pledge</div>
+    <div class="note" data-i18n="n_ana">Net annual delta note.</div>
     <div id="ana_taux_legend" style="font-size:11px;color:var(--muted);margin:6px 0"></div>
     <div style="overflow-x:auto">
       <table class="ana-table">
-        <thead><tr><th></th><th class="col-lpp">LPP seul</th><th class="col-p3">3ème pilier seul</th><th class="col-cum">Cumul (même année)</th></tr></thead>
+        <thead><tr><th></th><th class="col-lpp" data-i18n="l_lpponly">LPP only</th><th class="col-p3" data-i18n="l_p3only">3rd pillar only</th><th class="col-cum" data-i18n="l_cumyr">Combined (same year)</th></tr></thead>
         <tbody>
-          <tr><td>Montant concerné</td><td id="ana_lpp_m">—</td><td id="ana_p3_m">—</td><td id="ana_cum_m">—</td></tr>
-          <tr><td>Économie intérêts / an</td><td id="ana_lpp_ei">—</td><td id="ana_p3_ei">—</td><td id="ana_cum_ei">—</td></tr>
-          <tr><td>Rendement annuel si conservé</td><td id="ana_lpp_r">—</td><td id="ana_p3_r">—</td><td id="ana_cum_r">—</td></tr>
-          <tr><td>Delta annuel net</td><td id="ana_lpp_d">—</td><td id="ana_p3_d">—</td><td id="ana_cum_d">—</td></tr>
-          <tr><td>Impôt retrait (coût unique)</td><td id="ana_lpp_i">—</td><td id="ana_p3_i">—</td><td id="ana_cum_i">—</td></tr>
-          <tr><td>Seuil de rentabilité</td><td id="ana_lpp_s">—</td><td id="ana_p3_s">—</td><td id="ana_cum_s">—</td></tr>
-          <tr><td>Verdict</td><td id="ana_lpp_v">—</td><td id="ana_p3_v">—</td><td id="ana_cum_v">—</td></tr>
+          <tr><td data-i18n="l_anam">Amount concerned</td><td id="ana_lpp_m">—</td><td id="ana_p3_m">—</td><td id="ana_cum_m">—</td></tr>
+          <tr><td data-i18n="l_anaeco">Interest saving / year</td><td id="ana_lpp_ei">—</td><td id="ana_p3_ei">—</td><td id="ana_cum_ei">—</td></tr>
+          <tr><td data-i18n="l_anarend">Annual return if kept</td><td id="ana_lpp_r">—</td><td id="ana_p3_r">—</td><td id="ana_cum_r">—</td></tr>
+          <tr><td data-i18n="l_anadelta">Net annual delta</td><td id="ana_lpp_d">—</td><td id="ana_p3_d">—</td><td id="ana_cum_d">—</td></tr>
+          <tr><td data-i18n="l_anatax">Withdrawal tax (one-off)</td><td id="ana_lpp_i">—</td><td id="ana_p3_i">—</td><td id="ana_cum_i">—</td></tr>
+          <tr><td data-i18n="l_anabreak">Break-even</td><td id="ana_lpp_s">—</td><td id="ana_p3_s">—</td><td id="ana_cum_s">—</td></tr>
+          <tr><td data-i18n="l_anav">Verdict</td><td id="ana_lpp_v">—</td><td id="ana_p3_v">—</td><td id="ana_cum_v">—</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-
-</div><!-- end tab3 -->
-</div><!-- end tabs-content -->
-
+</div>
+</div>
 <div id="toast"></div>
 
 <script>
+
+// ════════════════════════ TRANSLATIONS ════════════════════
+const I18N={
+en:{app_title:"Swiss Mortgage Simulator",app_sub:"Canton de Vaud · Lausanne market",btn_calc:"CALCULATE",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
+tab1:"① Income",tab2:"② Property & Equity",tab3:"③ Mortgage & Rates",tab4:"④ Results & Summary",
+c_salaires:"Annual gross salaries",l_sal_main:"Annual gross salary — main applicant (CHF)",l_incl:"Include partner / spouse salary",l_sal_part:"Annual gross salary — partner (CHF)",
+c_bonus:"Bonus",l_bon_how:"Bonus treatment:",l_bon_ign:"Ignore",l_bon_avg:"3-year average (enter average)",l_bon_100:"100% of latest bonus",
+n_bonus:"Swiss banks typically use the 3-year average at 100%, or sometimes 66% of the latest bonus (UBS, Raiffeisen, BCVS).",
+l_bon_main:"Annual gross bonus — main applicant (CHF)",l_bon_part:"Annual gross bonus — partner (CHF)",
+c_add:"Additional income",l_rent:"Net rental income per year (CHF)",
+c_prop:"Property",l_price:"Purchase price (CHF)",l_mv:"Estimated market value (CHF) — if different",l_ptype:"Property type:",l_villa:"Villa",l_imm:"Building",
+c_acq:"Acquisition costs (Canton de Vaud)",l_mut:"Transfer tax VD (%)",l_not:"Notary fees (%)",l_reg:"Land registry (%)",
+c_eq:"Equity & Structure",l_cash:"Cash equity / savings (CHF)",l_cmin:"Minimum cash (costs + 10% MV):",l_applymin:"⬆ Apply minimum",
+c_lpp:"2nd pillar (LPP)",c_p3:"3rd pillar (3a/3b)",l_avail:"Available amount (CHF)",l_yield:"Estimated annual return (%)",
+l_ret:"Withdrawal (reduces loan)",l_nant:"Pledge (collateral)",
+n_finma:"FINMA rules: Effective LTV ≤ 80% | Hard equity (excl. LPP) ≥ 10% of market value. Acquisition costs must be covered by cash. Pledging allows borrowing above 80% nominal LTV — but increases the loan and therefore the debt ratio.",
+c_rate:"Rate & Mortgage type",l_rate:"Negotiated actual rate (%)",l_dur:"Loan duration (years)",l_mtype:"Mortgage type:",l_fixed:"Fixed",l_mixed:"Mixed",
+n_theo:"The standard theoretical rate used by Swiss banks for affordability testing is 5%, regardless of the negotiated rate. Both scenarios are calculated in parallel.",
+c_costs:"Property running costs",l_forfait:"Standard 1% of market value / year",l_reelles:"Actual costs",l_costs_ann:"Actual annual costs (CHF)",
+c_verdict:"Affordability verdict",l_rate_real:"Actual rate",l_rate_theo:"Theoretical rate 5%",
+l_thresh:"≤33% ✅ Standard | ≤35% ⚠️ Strong profiles | ≤38% 🔶 Exceptional | >38% ❌ Refused",
+c_cap:"Borrowing capacity — Summary",l_cap33:"Max loan based on income (33%, 5% test)",l_cap35:"Max loan based on income (35%, 5% test)",
+l_cap_ltv:"Max loan LTV 80% + pledge",l_cap_nec:"Required loan with your equity",l_miss33:"Missing equity for 33%",l_miss35:"Missing equity for 35%",
+c_monthly:"Monthly summary",l_theo_s:"theo.",l_int_m:"Interest / month",l_am_m:"Amortisation / month",l_chg_m:"Running costs / month",
+l_tot_m:"Total monthly",l_rev_m:"Gross monthly income",l_effort:"Debt ratio",
+c_aff:"Annual affordability",l_rate_app:"Rate applied",l_int_a:"Annual interest",l_am_a:"Amortisation / year",
+l_chg_a:"Running costs / year",l_tot_a:"Total charges / year",l_debt:"Debt ratio",
+c_struct:"Mortgage structure",l_vv:"Market value",l_cashnet:"Cash net after acquisition costs",l_fpeff:"Effective equity",l_fphard:"Hard equity (excl. LPP)",
+l_htot:"Total mortgage",l_h1:"1st mortgage (≤65%)",l_h2:"2nd mortgage (65–80%)",l_ltv:"LTV nominal / effective",l_fppt:"Hard equity / market value",
+c_revcost:"Income & Acquisition costs",l_bruta:"Annual gross income",l_brutm:"Monthly gross income",
+l_price2:"Purchase price",l_mut2:"Transfer tax VD",l_not2:"Notary + registry",l_ftot:"Total acquisition costs",l_ctot:"Total cost",l_fptot:"Total equity committed",
+c_fiscal:"Tax impact — Hypothetical withdrawals (VD estimate)",
+n_fiscal:"Reduced rate 1/5 ICC+IFD bracket — Lausanne residence, single. Calculated on full amounts regardless of chosen mode. Indicative estimate only.",
+l_p3col:"3rd pillar",l_cumcol:"Combined *",l_wamt:"Amount withdrawn",l_taxest:"Estimated tax",l_effrate:"Effective rate",l_nettax:"Net after tax",
+n_cum:"* Combined amounts if LPP and 3rd pillar withdrawn in the same tax year.",
+c_ana:"Comparative analysis: Withdrawal vs Pledge",
+n_ana:"Net annual delta = Interest saving (withdrawal) − Lost return (pledge). Positive → withdrawal more advantageous. Break-even = years to recover the tax cost.",
+l_lpponly:"LPP only",l_p3only:"3rd pillar only",l_cumyr:"Combined (same year)",
+l_anam:"Amount concerned",l_anaeco:"Interest saving / year",l_anarend:"Annual return if kept",l_anadelta:"Net annual delta",l_anatax:"Withdrawal tax (one-off)",l_anabreak:"Break-even",l_anav:"Verdict",
+d_ftot:"Total costs:",d_cout:"Total cost:",d_cmin:"Minimum cash (costs + 10% MV):",
+d_fok:"✅ Costs covered — remaining cash:",d_fnok:"❌ Insufficient cash for costs (missing",
+d_ltv_eff_ok:"✅ Eff. LTV",d_ltv_eff_nok:"❌ Eff. LTV",d_nom:"nom.",
+d_ltv_ok:"✅ LTV",d_ltv_nok:"❌ LTV",d_fp_ok:"✅ Hard equity",d_fp_nok:"❌ Hard equity",
+d_none:"✅ None",d_ok33:"✅ Feasible (≤33%)",d_warn35:"⚠️ Borderline — strong profile (≤35%)",
+d_warn38:"🔶 Exceptional / alternative bank (≤38%)",d_nok:">38% ❌ Not feasible",
+d_rleg:"Return rates: LPP",d_rp3:"/ yr | 3rd pillar",d_rrate:"| Actual rate",d_yrs:"yrs",
+d_never:"Never (pledge dominates)",d_v5:"✅ Withdrawal recommended (<5 yrs)",d_v10:"⚠️ Withdrawal advantageous (5–10 yrs)",
+d_v15:"🔶 Long to amortise (10–15 yrs)",d_vn:"❌ Pledge preferable (>15 yrs)",d_vfree:"✅ Withdrawal with no tax cost",d_vpledge:"✅ Pledge always preferable",
+d_tc:"Calculation done ✓",d_te:"Config exported ✓",d_ti:"Config imported ✓",d_terr:"Import error",d_reset:"Reset all fields?"},
+
+fr:{app_title:"Simulateur Hypothécaire Suisse",app_sub:"Canton de Vaud · Marché Lausanne",btn_calc:"CALCULER",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
+tab1:"① Revenus",tab2:"② Bien & Fonds propres",tab3:"③ Hypothèque & Taux",tab4:"④ Résultats & Bilan",
+c_salaires:"Salaires bruts annuels",l_sal_main:"Salaire brut annuel — demandeur principal (CHF)",l_incl:"Inclure salaire conjoint / partenaire",l_sal_part:"Salaire brut annuel — conjoint (CHF)",
+c_bonus:"Bonus",l_bon_how:"Traitement du bonus :",l_bon_ign:"Ignorer",l_bon_avg:"Moyenne 3 ans (saisir la moyenne)",l_bon_100:"100% du bonus récent",
+n_bonus:"Les banques suisses retiennent usuellement la moyenne des 3 dernières années à 100%, ou parfois 66% du bonus le plus récent (UBS, Raiffeisen, BCVS).",
+l_bon_main:"Bonus annuel brut — principal (CHF)",l_bon_part:"Bonus annuel brut — conjoint (CHF)",
+c_add:"Revenus complémentaires",l_rent:"Revenus locatifs nets annuels (CHF)",
+c_prop:"Bien immobilier",l_price:"Prix d'achat (CHF)",l_mv:"Valeur vénale estimée (CHF) — si différente",l_ptype:"Type de bien :",l_villa:"Villa",l_imm:"Immeuble",
+c_acq:"Frais d'acquisition (Canton de Vaud)",l_mut:"Droits de mutation VD (%)",l_not:"Frais notaire (%)",l_reg:"Frais registre foncier (%)",
+c_eq:"Fonds propres & Structure",l_cash:"Fonds propres cash / épargne (CHF)",l_cmin:"Cash minimum requis (frais + 10% VV) :",l_applymin:"⬆ Appliquer le minimum",
+c_lpp:"2ème pilier LPP",c_p3:"3ème pilier (3a/3b)",l_avail:"Montant disponible (CHF)",l_yield:"Rendement annuel estimé (%)",
+l_ret:"Retrait (réduit capital)",l_nant:"Nantissement (garantie)",
+n_finma:"Règles FINMA : LTV effective ≤ 80% | FP durs (hors LPP) ≥ 10% de la valeur vénale. Les frais d'acquisition doivent être couverts par du cash. Le nantissement permet d'emprunter au-delà de 80% LTV nominal — mais augmente l'hypothèque et donc le taux d'endettement.",
+c_rate:"Taux & Type de crédit",l_rate:"Taux d'intérêt réel négocié (%)",l_dur:"Durée du crédit (années)",l_mtype:"Type de crédit :",l_fixed:"Fixe",l_mixed:"Mixte",
+n_theo:"Le taux théorique standard utilisé par les banques suisses pour le test d'affordability est de 5%, indépendamment du taux réel négocié. Les deux scénarios sont calculés en parallèle.",
+c_costs:"Charges du bien",l_forfait:"Forfait 1% valeur vénale / an (bancaire)",l_reelles:"Charges réelles",l_costs_ann:"Charges réelles annuelles (CHF)",
+c_verdict:"Verdict d'affordability",l_rate_real:"Taux réel",l_rate_theo:"Taux théorique 5%",
+l_thresh:"≤33% ✅ Standard | ≤35% ⚠️ Profils solides | ≤38% 🔶 Cas exceptionnels | >38% ❌ Refus",
+c_cap:"Capacité d'emprunt — Synthèse",l_cap33:"Emprunt max selon revenus (33%, test 5%)",l_cap35:"Emprunt max selon revenus (35%, test 5%)",
+l_cap_ltv:"Emprunt max LTV 80% + nantissement",l_cap_nec:"Emprunt nécessaire avec votre apport",l_miss33:"Apport cash manquant pour 33%",l_miss35:"Apport cash manquant pour 35%",
+c_monthly:"Bilan mensuel",l_theo_s:"théo.",l_int_m:"Intérêts / mois",l_am_m:"Amortissement / mois",l_chg_m:"Charges / mois",
+l_tot_m:"Total mensuel",l_rev_m:"Revenu brut mensuel",l_effort:"Taux d'effort",
+c_aff:"Affordability annuelle",l_rate_app:"Taux appliqué",l_int_a:"Intérêts annuels",l_am_a:"Amortissement / an",
+l_chg_a:"Charges / an",l_tot_a:"Total charges / an",l_debt:"Taux d'endettement",
+c_struct:"Structure hypothécaire",l_vv:"Valeur vénale",l_cashnet:"Cash net après frais d'acquisition",l_fpeff:"Fonds propres effectifs",l_fphard:"FP durs (hors LPP)",
+l_htot:"Hypothèque totale",l_h1:"1ère hypothèque (≤65%)",l_h2:"2ème hypothèque (65–80%)",l_ltv:"LTV nominale / effective",l_fppt:"FP durs / valeur vénale",
+c_revcost:"Revenus & Frais d'acquisition",l_bruta:"Revenu brut annuel",l_brutm:"Revenu brut mensuel",
+l_price2:"Prix d'achat",l_mut2:"Droits de mutation VD",l_not2:"Frais notaire + registre",l_ftot:"Total frais acquisition",l_ctot:"Coût total",l_fptot:"Total FP engagés",
+c_fiscal:"Impact fiscal — Retraits hypothétiques (estimation VD)",
+n_fiscal:"Taux réduit 1/5 barème ICC+IFD — résidence Lausanne, état civil seul. Calculé sur les montants complets quelle que soit l'option choisie. Estimation indicative.",
+l_p3col:"3ème pilier",l_cumcol:"Cumulé *",l_wamt:"Montant retiré",l_taxest:"Impôt estimé",l_effrate:"Taux effectif",l_nettax:"Net après impôt",
+n_cum:"* Montants cumulés si retrait LPP et 3ème pilier la même année.",
+c_ana:"Analyse comparative : Retrait vs Nantissement",
+n_ana:"Delta annuel net = Économie d'intérêts (retrait) − Rendement perdu (nantissement). Positif → retrait plus avantageux. Seuil de rentabilité = années pour amortir le coût fiscal.",
+l_lpponly:"LPP seul",l_p3only:"3ème pilier seul",l_cumyr:"Cumul (même année)",
+l_anam:"Montant concerné",l_anaeco:"Économie intérêts / an",l_anarend:"Rendement annuel si conservé",l_anadelta:"Delta annuel net",l_anatax:"Impôt retrait (coût unique)",l_anabreak:"Seuil de rentabilité",l_anav:"Verdict",
+d_ftot:"Total frais :",d_cout:"Coût total :",d_cmin:"Cash minimum requis (frais + 10% VV) :",
+d_fok:"✅ Frais couverts — cash restant :",d_fnok:"❌ Cash insuffisant pour frais (manque",
+d_ltv_eff_ok:"✅ LTV eff.",d_ltv_eff_nok:"❌ LTV effective",d_nom:"nom.",
+d_ltv_ok:"✅ LTV",d_ltv_nok:"❌ LTV",d_fp_ok:"✅ FP durs",d_fp_nok:"❌ FP durs",
+d_none:"✅ Aucun",d_ok33:"✅ Finançable (≤33%)",d_warn35:"⚠️ Limite — profil solide requis (≤35%)",
+d_warn38:"🔶 Cas exceptionnel / banque alternative (≤38%)",d_nok:">38% ❌ Non finançable",
+d_rleg:"Taux de rendement : LPP",d_rp3:"/ an | 3ème pilier",d_rrate:"| Taux réel",d_yrs:"ans",
+d_never:"Jamais (nantissement domine)",d_v5:"✅ Retrait recommandé (< 5 ans)",d_v10:"⚠️ Retrait avantageux (5–10 ans)",
+d_v15:"🔶 Long à amortir (10–15 ans)",d_vn:"❌ Nantissement préférable (>15 ans)",d_vfree:"✅ Retrait sans coût fiscal",d_vpledge:"✅ Nantissement toujours préférable",
+d_tc:"Calcul effectué ✓",d_te:"Config exportée ✓",d_ti:"Config importée ✓",d_terr:"Erreur import JSON",d_reset:"Réinitialiser tous les champs ?"},
+
+de:{app_title:"Schweizer Hypothekenrechner",app_sub:"Kanton Waadt · Markt Lausanne",btn_calc:"BERECHNEN",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
+tab1:"① Einkommen",tab2:"② Immobilie & EK",tab3:"③ Hypothek & Zinsen",tab4:"④ Ergebnisse",
+c_salaires:"Jahresbruttolöhne",l_sal_main:"Jahresbruttolohn — Hauptantragsteller (CHF)",l_incl:"Lohn Partner/in einbeziehen",l_sal_part:"Jahresbruttolohn — Partner/in (CHF)",
+c_bonus:"Bonus",l_bon_how:"Bonusbehandlung:",l_bon_ign:"Ignorieren",l_bon_avg:"3-J.-Durchschnitt (Durchschnitt eingeben)",l_bon_100:"100% des letzten Bonus",
+n_bonus:"Schweizer Banken verwenden üblicherweise den 3-Jahres-Durchschnitt zu 100%, oder 66% des letzten Bonus (UBS, Raiffeisen, BCVS).",
+l_bon_main:"Jahresbruttobonus — Hauptantragsteller (CHF)",l_bon_part:"Jahresbruttobonus — Partner/in (CHF)",
+c_add:"Zusatzeinkommen",l_rent:"Nettomieteinnahmen pro Jahr (CHF)",
+c_prop:"Immobilie",l_price:"Kaufpreis (CHF)",l_mv:"Geschätzter Verkehrswert (CHF) — falls abweichend",l_ptype:"Immobilientyp:",l_villa:"Villa",l_imm:"Mehrfamilienhaus",
+c_acq:"Erwerbskosten (Kanton Waadt)",l_mut:"Handänderungssteuer VD (%)",l_not:"Notargebühren (%)",l_reg:"Grundbuchgebühren (%)",
+c_eq:"Eigenkapital & Struktur",l_cash:"Bares Eigenkapital / Ersparnisse (CHF)",l_cmin:"Mindest-Cash (Kosten + 10% VW):",l_applymin:"⬆ Minimum anwenden",
+c_lpp:"2. Säule (BVG)",c_p3:"3. Säule (3a/3b)",l_avail:"Verfügbarer Betrag (CHF)",l_yield:"Geschätzte Jahresrendite (%)",
+l_ret:"Vorbezug (reduziert Darlehen)",l_nant:"Verpfändung (Sicherheit)",
+n_finma:"FINMA-Regeln: Eff. BLG ≤ 80% | Hartes EK (ohne BVG) ≥ 10% des VW. Erwerbskosten durch Barmittel. Verpfändung erlaubt BLG über 80% nominal — erhöht aber Darlehen und Tragbarkeit.",
+c_rate:"Zinsen & Hypothekentyp",l_rate:"Verhandelter Effektivzins (%)",l_dur:"Laufzeit (Jahre)",l_mtype:"Hypothekentyp:",l_fixed:"Fest",l_mixed:"Gemischt",
+n_theo:"Der Theoriezinssatz für den Tragbarkeitstest beträgt 5%, unabhängig vom verhandelten Zins. Beide Szenarien werden parallel berechnet.",
+c_costs:"Unterhaltskosten",l_forfait:"Pauschale 1% Verkehrswert / Jahr",l_reelles:"Effektive Kosten",l_costs_ann:"Effektive Jahreskosten (CHF)",
+c_verdict:"Tragbarkeitsergebnis",l_rate_real:"Effektivzins",l_rate_theo:"Theoretischer Zinssatz 5%",
+l_thresh:"≤33% ✅ Standard | ≤35% ⚠️ Gute Profile | ≤38% 🔶 Ausnahmen | >38% ❌ Abgelehnt",
+c_cap:"Kreditkapazität — Zusammenfassung",l_cap33:"Max. Darlehen nach Einkommen (33%, 5%-Test)",l_cap35:"Max. Darlehen nach Einkommen (35%, 5%-Test)",
+l_cap_ltv:"Max. Darlehen BLG 80% + Verpfändung",l_cap_nec:"Benötigtes Darlehen mit Ihrem EK",l_miss33:"Fehlendes EK für 33%",l_miss35:"Fehlendes EK für 35%",
+c_monthly:"Monatliche Übersicht",l_theo_s:"theo.",l_int_m:"Zinsen / Monat",l_am_m:"Amortisation / Monat",l_chg_m:"Nebenkosten / Monat",
+l_tot_m:"Gesamtkosten / Monat",l_rev_m:"Monatliches Bruttoeinkommen",l_effort:"Tragbarkeit",
+c_aff:"Jährliche Tragbarkeit",l_rate_app:"Angewendeter Zins",l_int_a:"Jahreszinsen",l_am_a:"Amortisation / Jahr",
+l_chg_a:"Nebenkosten / Jahr",l_tot_a:"Gesamtbelastung / Jahr",l_debt:"Tragbarkeitsquote",
+c_struct:"Hypothekenstruktur",l_vv:"Verkehrswert",l_cashnet:"Netto-Barmittel nach Erwerbskosten",l_fpeff:"Effektives Eigenkapital",l_fphard:"Hartes EK (ohne BVG)",
+l_htot:"Gesamthypothek",l_h1:"1. Hypothek (≤65%)",l_h2:"2. Hypothek (65–80%)",l_ltv:"BLG nominal / effektiv",l_fppt:"Hartes EK / Verkehrswert",
+c_revcost:"Einkommen & Erwerbskosten",l_bruta:"Jahresbruttoeinkommen",l_brutm:"Monatliches Bruttoeinkommen",
+l_price2:"Kaufpreis",l_mut2:"Handänderungssteuer VD",l_not2:"Notar + Grundbuch",l_ftot:"Gesamte Erwerbskosten",l_ctot:"Gesamtkosten",l_fptot:"Eingesetztes EK",
+c_fiscal:"Steuerliche Auswirkung — Hypothetische Bezüge (VD)",
+n_fiscal:"Reduzierter Satz 1/5 ICC+IFD — Wohnsitz Lausanne, ledig. Auf Vollbeträge, unabhängig vom Modus. Nur Richtwert.",
+l_p3col:"3. Säule",l_cumcol:"Kumuliert *",l_wamt:"Bezogener Betrag",l_taxest:"Geschätzte Steuer",l_effrate:"Eff. Steuersatz",l_nettax:"Netto nach Steuern",
+n_cum:"* Kumuliert bei gleichzeitigem BVG- und 3. Säule-Bezug.",
+c_ana:"Vergleichsanalyse: Vorbezug vs Verpfändung",
+n_ana:"Netto-Delta = Zinseinsparung (Bezug) − Entgangene Rendite (Pfand). Positiv → Bezug vorteilhafter.",
+l_lpponly:"Nur BVG",l_p3only:"Nur 3. Säule",l_cumyr:"Kumuliert (gleiches Jahr)",
+l_anam:"Betroffener Betrag",l_anaeco:"Zinseinsparung / Jahr",l_anarend:"Jahresrendite bei Beibehaltung",l_anadelta:"Netto-Jahresdelta",l_anatax:"Bezugssteuer (einmalig)",l_anabreak:"Amortisationsschwelle",l_anav:"Ergebnis",
+d_ftot:"Gesamtkosten:",d_cout:"Gesamtkosten:",d_cmin:"Mindest-Cash (Kosten + 10% VW):",
+d_fok:"✅ Kosten gedeckt — verbleibende Barmittel:",d_fnok:"❌ Unzureichende Barmittel (fehlt",
+d_ltv_eff_ok:"✅ Eff. BLG",d_ltv_eff_nok:"❌ Eff. BLG",d_nom:"nom.",
+d_ltv_ok:"✅ BLG",d_ltv_nok:"❌ BLG",d_fp_ok:"✅ Hartes EK",d_fp_nok:"❌ Hartes EK",
+d_none:"✅ Keines",d_ok33:"✅ Finanzierbar (≤33%)",d_warn35:"⚠️ Grenzwertig — gutes Profil erforderlich (≤35%)",
+d_warn38:"🔶 Ausnahmefall / Alternativbank (≤38%)",d_nok:">38% ❌ Nicht finanzierbar",
+d_rleg:"Renditen: BVG",d_rp3:"/ J. | 3. Säule",d_rrate:"| Effektivzins",d_yrs:"J.",
+d_never:"Nie (Verpfändung dominiert)",d_v5:"✅ Vorbezug empfohlen (<5 J.)",d_v10:"⚠️ Vorbezug vorteilhaft (5–10 J.)",
+d_v15:"🔶 Lange Amortisation (10–15 J.)",d_vn:"❌ Verpfändung vorzuziehen (>15 J.)",d_vfree:"✅ Vorbezug ohne Steuerkosten",d_vpledge:"✅ Verpfändung immer vorzuziehen",
+d_tc:"Berechnung abgeschlossen ✓",d_te:"Konfiguration exportiert ✓",d_ti:"Konfiguration importiert ✓",d_terr:"Importfehler",d_reset:"Alle Felder zurücksetzen?"}
+};
+
+let currentLang='en';
+function i(k){return(I18N[currentLang]&&I18N[currentLang][k])||I18N.en[k]||k;}
+
+// Apply translations via data-i18n attributes
+function applyLang(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    const v=i(k);
+    if(v)el.textContent=v;
+  });
+}
+
+function setLang(l){
+  currentLang=l;
+  localStorage.setItem('hypo_lang',l);
+  document.getElementById('lang-select').value=l;
+  applyLang();
+  calculate();
+}
+
+
 // ═══════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════
@@ -1100,9 +1256,15 @@ function showToast(msg) {
 // ═══════════════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   initRadioGroups();
+  // Restore saved language before loading state
+  const savedLang = localStorage.getItem('hypo_lang') || 'en';
+  currentLang = savedLang;
+  document.getElementById('lang-select').value = savedLang;
+  applyLang();
   loadState();
   calculate();
 });
+
 </script>
 </body>
 </html>
