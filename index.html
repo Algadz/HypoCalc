@@ -74,6 +74,8 @@ input, select { font-family: var(--font); }
 #tabs-nav {
   display: flex; background: var(--card); border-bottom: 2px solid var(--border);
   overflow-x: auto; scrollbar-width: none;
+  position: sticky; top: 50px; z-index: 99;
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
 }
 #tabs-nav::-webkit-scrollbar { display: none; }
 .tab-btn {
@@ -283,10 +285,8 @@ input, select { font-family: var(--font); }
 <!-- ── Header ─────────────────────────────────────────────────────────── -->
 <div id="header">
   <div class="header-left">
-    <div id="header-h1" style="font-size:10px;font-weight:600;color:#fff">🏠 Hypocalc
-</div>
-    <div class="header-sub">
-</div>
+    <div id="header-h1" style="font-size:14px;font-weight:600;color:#fff">🏠 Simulateur Hypothécaire Suisse</div>
+    <div class="header-sub">Canton de Vaud · Marché Lausanne</div>
   </div>
   <div class="header-btns">
     <button class="btn-header" onclick="exportJSON()">📄 <span>Export</span></button>
