@@ -583,6 +583,10 @@ input, select { font-family: var(--font); }
       <label class="radio-option" data-val="retrait"><input type="radio" name="lpp_mode" value="retrait"><div class="radio-dot"></div><span data-i18n="l_ret">Withdrawal (reduces loan)</span></label>
       <label class="radio-option checked" data-val="nantissement"><input type="radio" name="lpp_mode" value="nantissement" checked><div class="radio-dot"></div><span data-i18n="l_nant">Pledge (collateral)</span></label>
     </div>
+    <div id="lpp_hard_eq_row" class="toggle-row" style="margin-top:8px;display:none">
+      <div class="toggle" id="tog_lpp_hard" onclick="toggleLppHard()"></div>
+      <span class="toggle-label" style="font-size:12px" data-i18n="l_lpp_hard">Count LPP withdrawal as hard equity</span>
+    </div>
     <div style="border-top:1px solid var(--border);padding-top:10px;margin:10px 0 4px;font-size:12px;color:var(--muted)" data-i18n="c_p3">3rd pillar (3a/3b)</div>
     <div class="form-grid" style="margin-bottom:6px">
       <label class="form-label" data-i18n="l_avail">Available amount (CHF)</label>
@@ -820,7 +824,7 @@ c_acq:"Acquisition costs",l_canton:"Canton",l_canton_custom:"Custom / manual",l_
 n_acq:"Rates are indicative — verify with a local notary. Transfer tax varies from 0% (ZH, ZG, SZ…) to ~3.3% (NE). Notary and registry fees also vary.",
 c_eq:"Equity & Structure",l_cash:"Cash equity / savings (CHF)",l_cmin:"Minimum cash (costs + 10% MV):",l_applymin:"⬆ Apply minimum",
 c_lpp:"2nd pillar (LPP)",c_p3:"3rd pillar (3a/3b)",l_avail:"Available amount (CHF)",l_yield:"Estimated annual return (%)",
-l_ret:"Withdrawal (reduces loan)",l_nant:"Pledge (collateral)",
+l_ret:"Withdrawal (reduces loan)",l_nant:"Pledge (collateral)",l_lpp_hard:"Count LPP withdrawal as hard equity",
 n_finma:"FINMA rules: Effective LTV ≤ 80% | Hard equity (cash + withdrawals) ≥ 10% of market value. Acquisition costs must be covered by cash. Pledging allows borrowing above 80% nominal LTV — but increases the loan and therefore the debt ratio.",
 c_rate:"Rate & Mortgage type",l_rate:"Negotiated actual rate (%)",l_dur:"Loan duration (years)",l_mtype:"Mortgage type:",l_fixed:"Fixed",l_mixed:"Mixed",
 n_theo:"The standard theoretical rate used by Swiss banks for affordability testing is 5%, regardless of the negotiated rate. Both scenarios are calculated in parallel.",
@@ -878,7 +882,7 @@ c_acq:"Frais d'acquisition",l_canton:"Canton",l_canton_custom:"Personnalisé / m
 n_acq:"Taux indicatifs — à vérifier auprès d'un notaire. Les droits de mutation varient de 0% (ZH, ZG, SZ…) à ~3.3% (NE). Les frais de notaire et registre varient également.",
 c_eq:"Fonds propres & Structure",l_cash:"Fonds propres cash / épargne (CHF)",l_cmin:"Cash minimum requis (frais + 10% VV) :",l_applymin:"⬆ Appliquer le minimum",
 c_lpp:"2ème pilier LPP",c_p3:"3ème pilier (3a/3b)",l_avail:"Montant disponible (CHF)",l_yield:"Rendement annuel estimé (%)",
-l_ret:"Retrait (réduit capital)",l_nant:"Nantissement (garantie)",
+l_ret:"Retrait (réduit capital)",l_nant:"Nantissement (garantie)",l_lpp_hard:"Compter le retrait LPP comme FP durs",
 n_finma:"Règles FINMA : LTV effective ≤ 80% | FP durs (retraits inclus) ≥ 10% de la valeur vénale. Les frais d'acquisition doivent être couverts par du cash. Le nantissement permet d'emprunter au-delà de 80% LTV nominal — mais augmente l'hypothèque et donc le taux d'endettement.",
 c_rate:"Taux & Type de crédit",l_rate:"Taux d'intérêt réel négocié (%)",l_dur:"Durée du crédit (années)",l_mtype:"Type de crédit :",l_fixed:"Fixe",l_mixed:"Mixte",
 n_theo:"Le taux théorique standard utilisé par les banques suisses pour le test d'affordability est de 5%, indépendamment du taux réel négocié. Les deux scénarios sont calculés en parallèle.",
@@ -936,7 +940,7 @@ c_acq:"Erwerbskosten",l_canton:"Kanton",l_canton_custom:"Benutzerdefiniert",l_mu
 n_acq:"Richtwerte — beim lokalen Notar zu verifizieren. Handänderungssteuer variiert von 0% (ZH, ZG, SZ…) bis ~3.3% (NE). Notar- und Grundbuchgebühren variieren ebenfalls.",
 c_eq:"Eigenkapital & Struktur",l_cash:"Bares Eigenkapital / Ersparnisse (CHF)",l_cmin:"Mindest-Cash (Kosten + 10% VW):",l_applymin:"⬆ Minimum anwenden",
 c_lpp:"2. Säule (BVG)",c_p3:"3. Säule (3a/3b)",l_avail:"Verfügbarer Betrag (CHF)",l_yield:"Geschätzte Jahresrendite (%)",
-l_ret:"Vorbezug (reduziert Darlehen)",l_nant:"Verpfändung (Sicherheit)",
+l_ret:"Vorbezug (reduziert Darlehen)",l_nant:"Verpfändung (Sicherheit)",l_lpp_hard:"LPP-Bezug als hartes EK zählen",
 n_finma:"FINMA-Regeln: Eff. BLG ≤ 80% | Hartes EK (Bezüge inkl.) ≥ 10% des VW. Erwerbskosten durch Barmittel. Verpfändung erlaubt BLG über 80% nominal — erhöht aber Darlehen und Tragbarkeit.",
 c_rate:"Zinsen & Hypothekentyp",l_rate:"Verhandelter Effektivzins (%)",l_dur:"Laufzeit (Jahre)",l_mtype:"Hypothekentyp:",l_fixed:"Fest",l_mixed:"Gemischt",
 n_theo:"Der Theoriezinssatz für den Tragbarkeitstest beträgt 5%, unabhängig vom verhandelten Zins. Beide Szenarien werden parallel berechnet.",
@@ -1065,6 +1069,7 @@ function initRadioGroups() {
         opt.classList.add('checked');
         saveState();
         if (grp.id === 'rg_bonus') updateBonusUI();
+        if (grp.id === 'rg_lpp_mode') updateLppHardRow();
       });
     });
   });
@@ -1222,7 +1227,8 @@ function calculate() {
   const total_nant  = lpp_nant + p3_nant;
 
   const fp_effectifs = fp_cash_net + lpp_retrait + p3_retrait;
-  const fp_durs      = fp_cash_net + lpp_retrait + p3_retrait;  // retraits = cash
+  // fp_durs: LPP withdrawal counts as hard equity only if toggle is on
+  const fp_durs = fp_cash_net + p3_retrait + (lppHardEquity ? lpp_retrait : 0);
 
   // ── 4. STRUCTURE HYPOTHÉCAIRE ──
   const seuil_1ere   = val_venale * 0.65;
@@ -1427,8 +1433,21 @@ function calculate() {
   showToast(i('d_tc'));
 }
 
-// ═══════════════════════════════════════════════════════════════════════
-// CANTON RATES
+let lppHardEquity = false;  // default: LPP withdrawal does NOT count as hard equity
+
+function toggleLppHard() {
+  lppHardEquity = !lppHardEquity;
+  document.getElementById('tog_lpp_hard').classList.toggle('on', lppHardEquity);
+  calculate();
+}
+
+function updateLppHardRow() {
+  const mode = getRadio('lpp_mode');
+  const row = document.getElementById('lpp_hard_eq_row');
+  if (row) row.style.display = mode === 'retrait' ? '' : 'none';
+}
+
+
 // mutation = transfer tax, notaire = notary, registre = land registry
 // Sources: cantonal legislation — indicative, verify with local notary
 // ═══════════════════════════════════════════════════════════════════════
@@ -1560,7 +1579,7 @@ const SELECTS = ['canton_select'];
 const RADIOS = ['mode_bonus','type_bien','lpp_mode','p3_mode','type_hypo','charges_mode'];
 
 function getState() {
-  const state = { conjoint_actif: conjointActive };
+  const state = { conjoint_actif: conjointActive, lpp_hard_equity: lppHardEquity };
   FIELDS.forEach(id => { state[id] = document.getElementById(id).value; });
   RADIOS.forEach(name => { state[name] = getRadio(name); });
   SELECTS.forEach(id => { state[id] = document.getElementById(id).value; });
@@ -1576,6 +1595,11 @@ function applyState(state) {
   SELECTS.forEach(id => {
     if (state[id] !== undefined) document.getElementById(id).value = state[id];
   });
+  if (state.lpp_hard_equity !== undefined) {
+    lppHardEquity = state.lpp_hard_equity;
+    const tog = document.getElementById('tog_lpp_hard');
+    if (tog) tog.classList.toggle('on', lppHardEquity);
+  }
   if (state.conjoint_actif && !conjointActive) toggleConjoint();
   else if (!state.conjoint_actif && conjointActive) toggleConjoint();
 }
@@ -1650,6 +1674,7 @@ document.addEventListener('DOMContentLoaded', () => {
   applyLang();
   loadState();
   updateBonusUI();
+  updateLppHardRow();
   calculate();
   showPrivacyNotice();
 });
