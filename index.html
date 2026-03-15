@@ -612,6 +612,8 @@ input, select { font-family: var(--font); }
       <input class="form-input" id="taux_reel" value="1.80">
       <label class="form-label" data-i18n="l_dur">Loan duration (years)</label>
       <input class="form-input" id="duree_credit" value="25">
+      <label class="form-label" data-i18n="l_amort_dur">2nd mortgage amortisation (years)</label>
+      <input class="form-input" id="amort_duree" value="15">
     </div>
     <div style="margin-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px" data-i18n="l_mtype">Mortgage type:</div>
     <div class="radio-group" id="rg_type_hypo">
@@ -828,7 +830,7 @@ c_eq:"Equity & Structure",l_cash:"Cash equity / savings (CHF)",l_cmin:"Minimum c
 c_lpp:"2nd pillar (LPP)",c_p3:"3rd pillar (3a/3b)",l_avail:"Available amount (CHF)",l_yield:"Estimated annual return (%)",
 l_ret:"Withdrawal (reduces loan)",l_nant:"Pledge (collateral)",l_lpp_hard:"Count LPP withdrawal as hard equity",
 n_finma:"FINMA rules: Effective LTV ≤ 80% | Hard equity (cash + withdrawals) ≥ 10% of market value. Acquisition costs must be covered by cash. Pledging allows borrowing above 80% nominal LTV — but increases the loan and therefore the debt ratio.",
-c_rate:"Rate & Mortgage type",l_rate:"Negotiated actual rate (%)",l_dur:"Loan duration (years)",l_mtype:"Mortgage type:",l_fixed:"Fixed",l_mixed:"Mixed",
+c_rate:"Rate & Mortgage type",l_rate:"Negotiated actual rate (%)",l_dur:"Loan duration (years)",l_amort_dur:"2nd mortgage amortisation (years)",l_mtype:"Mortgage type:",l_fixed:"Fixed",l_mixed:"Mixed",
 n_theo:"The standard theoretical rate used by Swiss banks for affordability testing is 5%, regardless of the negotiated rate. Both scenarios are calculated in parallel.",
 c_costs:"Property running costs",l_forfait:"Standard 1% of market value / year",l_reelles:"Actual costs",l_costs_ann:"Actual annual costs (CHF)",
 c_verdict:"Affordability verdict",l_rate_real:"Actual rate",l_rate_theo:"Theoretical rate 5%",
@@ -889,7 +891,7 @@ c_eq:"Fonds propres & Structure",l_cash:"Fonds propres cash / épargne (CHF)",l_
 c_lpp:"2ème pilier LPP",c_p3:"3ème pilier (3a/3b)",l_avail:"Montant disponible (CHF)",l_yield:"Rendement annuel estimé (%)",
 l_ret:"Retrait (réduit capital)",l_nant:"Nantissement (garantie)",l_lpp_hard:"Compter le retrait LPP comme FP durs",
 n_finma:"Règles FINMA : LTV effective ≤ 80% | FP durs (retraits inclus) ≥ 10% de la valeur vénale. Les frais d'acquisition doivent être couverts par du cash. Le nantissement permet d'emprunter au-delà de 80% LTV nominal — mais augmente l'hypothèque et donc le taux d'endettement.",
-c_rate:"Taux & Type de crédit",l_rate:"Taux d'intérêt réel négocié (%)",l_dur:"Durée du crédit (années)",l_mtype:"Type de crédit :",l_fixed:"Fixe",l_mixed:"Mixte",
+c_rate:"Taux & Type de crédit",l_rate:"Taux d'intérêt réel négocié (%)",l_dur:"Durée du crédit (années)",l_amort_dur:"Amortissement 2e hypothèque (années)",l_mtype:"Type de crédit :",l_fixed:"Fixe",l_mixed:"Mixte",
 n_theo:"Le taux théorique standard utilisé par les banques suisses pour le test d'affordability est de 5%, indépendamment du taux réel négocié. Les deux scénarios sont calculés en parallèle.",
 c_costs:"Charges du bien",l_forfait:"Forfait 1% valeur vénale / an (bancaire)",l_reelles:"Charges réelles",l_costs_ann:"Charges réelles annuelles (CHF)",
 c_verdict:"Verdict d'affordability",l_rate_real:"Taux réel",l_rate_theo:"Taux théorique 5%",
@@ -949,7 +951,7 @@ c_eq:"Eigenkapital & Struktur",l_cash:"Bares Eigenkapital / Ersparnisse (CHF)",l
 c_lpp:"2. Säule (BVG)",c_p3:"3. Säule (3a/3b)",l_avail:"Verfügbarer Betrag (CHF)",l_yield:"Geschätzte Jahresrendite (%)",
 l_ret:"Vorbezug (reduziert Darlehen)",l_nant:"Verpfändung (Sicherheit)",l_lpp_hard:"LPP-Bezug als hartes EK zählen",
 n_finma:"FINMA-Regeln: Eff. BLG ≤ 80% | Hartes EK (Bezüge inkl.) ≥ 10% des VW. Erwerbskosten durch Barmittel. Verpfändung erlaubt BLG über 80% nominal — erhöht aber Darlehen und Tragbarkeit.",
-c_rate:"Zinsen & Hypothekentyp",l_rate:"Verhandelter Effektivzins (%)",l_dur:"Laufzeit (Jahre)",l_mtype:"Hypothekentyp:",l_fixed:"Fest",l_mixed:"Gemischt",
+c_rate:"Zinsen & Hypothekentyp",l_rate:"Verhandelter Effektivzins (%)",l_dur:"Laufzeit (Jahre)",l_amort_dur:"Amortisation 2. Hypothek (Jahre)",l_mtype:"Hypothekentyp:",l_fixed:"Fest",l_mixed:"Gemischt",
 n_theo:"Der Theoriezinssatz für den Tragbarkeitstest beträgt 5%, unabhängig vom verhandelten Zins. Beide Szenarien werden parallel berechnet.",
 c_costs:"Unterhaltskosten",l_forfait:"Pauschale 1% Verkehrswert / Jahr",l_reelles:"Effektive Kosten",l_costs_ann:"Effektive Jahreskosten (CHF)",
 c_verdict:"Tragbarkeitsergebnis",l_rate_real:"Effektivzins",l_rate_theo:"Theoretischer Zinssatz 5%",
@@ -1288,7 +1290,8 @@ function calculate() {
   });
 
   // ── 5. AMORTISSEMENT & CHARGES ──
-  const amort_annuel = hypo2 > 0 ? hypo2 / AMORT_ANS : 0;
+  const amort_duree_ans = Math.max(1, fmtNum(document.getElementById('amort_duree').value) || 15);
+  const amort_annuel = hypo2 > 0 ? hypo2 / amort_duree_ans : 0;
   const charges_mode = getRadio('charges_mode');
   const charges_annuelles = charges_mode === 'forfait'
     ? val_venale * ENTRETIEN
@@ -1326,7 +1329,7 @@ function calculate() {
   document.getElementById('v_theo').textContent = txt_t;
 
   // ── 8. CAPACITÉ D'EMPRUNT ──
-  const amort_rate = 1 / AMORT_ANS;
+  const amort_rate = 1 / amort_duree_ans;
 
   function hypoMaxRevenu(seuil) {
     const avec2 = (revenu_base * seuil - charges_annuelles + seuil_1ere * amort_rate) / (TAUX_THEO + amort_rate);
@@ -1614,7 +1617,7 @@ const FIELDS = ['salaire_principal','salaire_conjoint','bonus_principal','bonus_
   'bonus_p_y1','bonus_p_y2','bonus_p_y3','bonus_c_y1','bonus_c_y2','bonus_c_y3',
   'revenus_locatifs','revenus_locatifs_pct','prix_achat','valeur_venale','frais_mutation','frais_notaire',
   'frais_registre','fp_cash','lpp_montant','lpp_rendement','pilier3_montant',
-  'pilier3_rendement','taux_reel','duree_credit','charges_reelles_annuelles'];
+  'pilier3_rendement','taux_reel','duree_credit','amort_duree','charges_reelles_annuelles'];
 const SELECTS = ['canton_select'];
 const RADIOS = ['mode_bonus','type_bien','lpp_mode','p3_mode','type_hypo','charges_mode'];
 
