@@ -515,6 +515,42 @@ input, select { font-family: var(--font); }
   </div>
   <div class="card">
     <div class="card-title" data-i18n="c_acq">Acquisition costs</div>
+    <div class="form-grid narrow" style="margin-bottom:10px">
+      <label class="form-label" data-i18n="l_canton">Canton</label>
+      <select class="form-input" id="canton_select" onchange="applyCantonRates()" style="text-align:left;cursor:pointer">
+        <option value="">— <span data-i18n="l_canton_custom">Custom</span> —</option>
+        <optgroup label="Romandie / Tessin">
+          <option value="VD">VD — Vaud</option>
+          <option value="GE">GE — Genève</option>
+          <option value="FR">FR — Fribourg</option>
+          <option value="NE">NE — Neuchâtel</option>
+          <option value="VS">VS — Valais</option>
+          <option value="JU">JU — Jura</option>
+          <option value="TI">TI — Ticino</option>
+        </optgroup>
+        <optgroup label="Deutschschweiz">
+          <option value="ZH">ZH — Zürich</option>
+          <option value="BE">BE — Bern</option>
+          <option value="LU">LU — Luzern</option>
+          <option value="SG">SG — St. Gallen</option>
+          <option value="AG">AG — Aargau</option>
+          <option value="TG">TG — Thurgau</option>
+          <option value="SO">SO — Solothurn</option>
+          <option value="BS">BS — Basel-Stadt</option>
+          <option value="BL">BL — Basel-Landschaft</option>
+          <option value="GR">GR — Graubünden</option>
+          <option value="SZ">SZ — Schwyz</option>
+          <option value="ZG">ZG — Zug</option>
+          <option value="UR">UR — Uri</option>
+          <option value="OW">OW — Obwalden</option>
+          <option value="NW">NW — Nidwalden</option>
+          <option value="GL">GL — Glarus</option>
+          <option value="SH">SH — Schaffhausen</option>
+          <option value="AR">AR — Appenzell AR</option>
+          <option value="AI">AI — Appenzell AI</option>
+        </optgroup>
+      </select>
+    </div>
     <div class="form-grid narrow">
       <label class="form-label" data-i18n="l_mut">Transfer tax (%)</label>
       <input class="form-input" id="frais_mutation" value="2.2">
@@ -523,7 +559,7 @@ input, select { font-family: var(--font); }
       <label class="form-label" data-i18n="l_reg">Land registry (%)</label>
       <input class="form-input" id="frais_registre" value="0.3">
     </div>
-    <div class="note" style="margin-top:8px" data-i18n="n_acq">Default values reflect typical Swiss acquisition costs. Transfer tax varies significantly by canton (0% in some, up to 3.3% in others). Adjust to match your canton.</div>
+    <div class="note" style="margin-top:8px" data-i18n="n_acq">Rates are indicative — verify with a notary in your canton. Transfer tax varies from 0% (ZH, ZG, SZ…) to ~3.3% (NE). Notary and registry fees also vary.</div>
     <div id="frais_total_label" style="margin-top:8px;font-size:13px;font-weight:600;color:var(--accent)">—</div>
   </div>
   <div class="card">
@@ -665,7 +701,7 @@ input, select { font-family: var(--font); }
         <tr><td data-i18n="l_vv">Market value</td><td id="r_vv">—</td></tr>
         <tr><td data-i18n="l_cashnet">Cash net after acquisition costs</td><td id="r_cash_net">—</td></tr>
         <tr><td data-i18n="l_fpeff">Effective equity</td><td id="r_fp_eff">—</td></tr>
-        <tr><td data-i18n="l_fphard">Hard equity (excl. LPP)</td><td id="r_fp_durs">—</td></tr>
+        <tr><td data-i18n="l_fphard">Hard equity (cash + withdrawals)</td><td id="r_fp_durs">—</td></tr>
         <tr class="separator"><td colspan="2"></td></tr>
         <tr><td data-i18n="l_htot">Total mortgage</td><td id="r_hypo_tot">—</td></tr>
         <tr><td data-i18n="l_h1">1st mortgage (≤65%)</td><td id="r_hypo1">—</td></tr>
@@ -780,12 +816,12 @@ l_rent_eff:"Effective amount counted",
 c_add:"Additional income",l_rent:"Gross rental income per year (CHF)",l_rent_pct:"% counted by bank",l_rent_pct_hint:"(typical: 70%)",
 n_rent:"Swiss banks typically count 60–80% of gross rental income for affordability purposes.",
 c_prop:"Property",l_price:"Purchase price (CHF)",l_mv:"Estimated market value (CHF) — if different",l_ptype:"Property type:",l_villa:"Villa",l_imm:"Building",
-c_acq:"Acquisition costs",l_mut:"Transfer tax (%)",l_not:"Notary fees (%)",l_reg:"Land registry (%)",
-n_acq:"Default values reflect typical Swiss acquisition costs. Transfer tax varies by canton (0% to ~3.3%). Adjust to match your canton.",
+c_acq:"Acquisition costs",l_canton:"Canton",l_canton_custom:"Custom / manual",l_mut:"Transfer tax (%)",l_not:"Notary fees (%)",l_reg:"Land registry (%)",
+n_acq:"Rates are indicative — verify with a local notary. Transfer tax varies from 0% (ZH, ZG, SZ…) to ~3.3% (NE). Notary and registry fees also vary.",
 c_eq:"Equity & Structure",l_cash:"Cash equity / savings (CHF)",l_cmin:"Minimum cash (costs + 10% MV):",l_applymin:"⬆ Apply minimum",
 c_lpp:"2nd pillar (LPP)",c_p3:"3rd pillar (3a/3b)",l_avail:"Available amount (CHF)",l_yield:"Estimated annual return (%)",
 l_ret:"Withdrawal (reduces loan)",l_nant:"Pledge (collateral)",
-n_finma:"FINMA rules: Effective LTV ≤ 80% | Hard equity (excl. LPP) ≥ 10% of market value. Acquisition costs must be covered by cash. Pledging allows borrowing above 80% nominal LTV — but increases the loan and therefore the debt ratio.",
+n_finma:"FINMA rules: Effective LTV ≤ 80% | Hard equity (cash + withdrawals) ≥ 10% of market value. Acquisition costs must be covered by cash. Pledging allows borrowing above 80% nominal LTV — but increases the loan and therefore the debt ratio.",
 c_rate:"Rate & Mortgage type",l_rate:"Negotiated actual rate (%)",l_dur:"Loan duration (years)",l_mtype:"Mortgage type:",l_fixed:"Fixed",l_mixed:"Mixed",
 n_theo:"The standard theoretical rate used by Swiss banks for affordability testing is 5%, regardless of the negotiated rate. Both scenarios are calculated in parallel.",
 c_costs:"Property running costs",l_forfait:"Standard 1% of market value / year",l_reelles:"Actual costs",l_costs_ann:"Actual annual costs (CHF)",
@@ -797,7 +833,7 @@ c_monthly:"Monthly summary",l_theo_s:"theo.",l_int_m:"Interest / month",l_am_m:"
 l_tot_m:"Total monthly",l_rev_m:"Gross monthly income",l_effort:"Debt ratio",
 c_aff:"Annual affordability",l_rate_app:"Rate applied",l_int_a:"Annual interest",l_am_a:"Amortisation / year",
 l_chg_a:"Running costs / year",l_tot_a:"Total charges / year",l_debt:"Debt ratio",
-c_struct:"Mortgage structure",l_vv:"Market value",l_cashnet:"Cash net after acquisition costs",l_fpeff:"Effective equity",l_fphard:"Hard equity (excl. LPP)",
+c_struct:"Mortgage structure",l_vv:"Market value",l_cashnet:"Cash net after acquisition costs",l_fpeff:"Effective equity",l_fphard:"Hard equity (cash + withdrawals)",
 l_htot:"Total mortgage",l_h1:"1st mortgage (≤65%)",l_h2:"2nd mortgage (65–80%)",l_ltv:"LTV nominal / effective",l_fppt:"Hard equity / market value",
 c_revcost:"Income & Acquisition costs",l_bruta:"Annual gross income",l_brutm:"Monthly gross income",
 l_price2:"Purchase price",l_mut2:"Transfer tax",l_not2:"Notary + registry",l_ftot:"Total acquisition costs",l_ctot:"Total cost",l_fptot:"Total equity committed",
@@ -838,12 +874,12 @@ l_rent_eff:"Montant effectivement retenu",
 c_add:"Revenus complémentaires",l_rent:"Revenus locatifs bruts annuels (CHF)",l_rent_pct:"% retenu par la banque",l_rent_pct_hint:"(typique : 70%)",
 n_rent:"Les banques suisses retiennent généralement 60–80% des revenus locatifs bruts pour le calcul de soutenabilité.",
 c_prop:"Bien immobilier",l_price:"Prix d'achat (CHF)",l_mv:"Valeur vénale estimée (CHF) — si différente",l_ptype:"Type de bien :",l_villa:"Villa",l_imm:"Immeuble",
-c_acq:"Frais d'acquisition",l_mut:"Droits de mutation (%)",l_not:"Frais notaire (%)",l_reg:"Frais registre foncier (%)",
-n_acq:"Les valeurs par défaut reflètent des frais d'acquisition typiques en Suisse. Les droits de mutation varient fortement selon le canton (0% à ~3.3%). Ajustez selon votre canton.",
+c_acq:"Frais d'acquisition",l_canton:"Canton",l_canton_custom:"Personnalisé / manuel",l_mut:"Droits de mutation (%)",l_not:"Frais notaire (%)",l_reg:"Frais registre foncier (%)",
+n_acq:"Taux indicatifs — à vérifier auprès d'un notaire. Les droits de mutation varient de 0% (ZH, ZG, SZ…) à ~3.3% (NE). Les frais de notaire et registre varient également.",
 c_eq:"Fonds propres & Structure",l_cash:"Fonds propres cash / épargne (CHF)",l_cmin:"Cash minimum requis (frais + 10% VV) :",l_applymin:"⬆ Appliquer le minimum",
 c_lpp:"2ème pilier LPP",c_p3:"3ème pilier (3a/3b)",l_avail:"Montant disponible (CHF)",l_yield:"Rendement annuel estimé (%)",
 l_ret:"Retrait (réduit capital)",l_nant:"Nantissement (garantie)",
-n_finma:"Règles FINMA : LTV effective ≤ 80% | FP durs (hors LPP) ≥ 10% de la valeur vénale. Les frais d'acquisition doivent être couverts par du cash. Le nantissement permet d'emprunter au-delà de 80% LTV nominal — mais augmente l'hypothèque et donc le taux d'endettement.",
+n_finma:"Règles FINMA : LTV effective ≤ 80% | FP durs (retraits inclus) ≥ 10% de la valeur vénale. Les frais d'acquisition doivent être couverts par du cash. Le nantissement permet d'emprunter au-delà de 80% LTV nominal — mais augmente l'hypothèque et donc le taux d'endettement.",
 c_rate:"Taux & Type de crédit",l_rate:"Taux d'intérêt réel négocié (%)",l_dur:"Durée du crédit (années)",l_mtype:"Type de crédit :",l_fixed:"Fixe",l_mixed:"Mixte",
 n_theo:"Le taux théorique standard utilisé par les banques suisses pour le test d'affordability est de 5%, indépendamment du taux réel négocié. Les deux scénarios sont calculés en parallèle.",
 c_costs:"Charges du bien",l_forfait:"Forfait 1% valeur vénale / an (bancaire)",l_reelles:"Charges réelles",l_costs_ann:"Charges réelles annuelles (CHF)",
@@ -855,7 +891,7 @@ c_monthly:"Bilan mensuel",l_theo_s:"théo.",l_int_m:"Intérêts / mois",l_am_m:"
 l_tot_m:"Total mensuel",l_rev_m:"Revenu brut mensuel",l_effort:"Taux d'effort",
 c_aff:"Affordability annuelle",l_rate_app:"Taux appliqué",l_int_a:"Intérêts annuels",l_am_a:"Amortissement / an",
 l_chg_a:"Charges / an",l_tot_a:"Total charges / an",l_debt:"Taux d'endettement",
-c_struct:"Structure hypothécaire",l_vv:"Valeur vénale",l_cashnet:"Cash net après frais d'acquisition",l_fpeff:"Fonds propres effectifs",l_fphard:"FP durs (hors LPP)",
+c_struct:"Structure hypothécaire",l_vv:"Valeur vénale",l_cashnet:"Cash net après frais d'acquisition",l_fpeff:"Fonds propres effectifs",l_fphard:"FP durs (retraits inclus)",
 l_htot:"Hypothèque totale",l_h1:"1ère hypothèque (≤65%)",l_h2:"2ème hypothèque (65–80%)",l_ltv:"LTV nominale / effective",l_fppt:"FP durs / valeur vénale",
 c_revcost:"Revenus & Frais d'acquisition",l_bruta:"Revenu brut annuel",l_brutm:"Revenu brut mensuel",
 l_price2:"Prix d'achat",l_mut2:"Droits de mutation",l_not2:"Frais notaire + registre",l_ftot:"Total frais acquisition",l_ctot:"Coût total",l_fptot:"Total FP engagés",
@@ -896,12 +932,12 @@ l_rent_eff:"Angerechneter Betrag",
 c_add:"Zusatzeinkommen",l_rent:"Bruttomieteinnahmen pro Jahr (CHF)",l_rent_pct:"% angerechnet durch Bank",l_rent_pct_hint:"(typisch: 70%)",
 n_rent:"Schweizer Banken rechnen typischerweise 60–80% der Bruttomieteinnahmen für die Tragbarkeitsberechnung an.",
 c_prop:"Immobilie",l_price:"Kaufpreis (CHF)",l_mv:"Geschätzter Verkehrswert (CHF) — falls abweichend",l_ptype:"Immobilientyp:",l_villa:"Villa",l_imm:"Mehrfamilienhaus",
-c_acq:"Erwerbskosten",l_mut:"Handänderungssteuer (%)",l_not:"Notargebühren (%)",l_reg:"Grundbuchgebühren (%)",
-n_acq:"Die Standardwerte spiegeln typische Schweizer Erwerbskosten wider. Die Handänderungssteuer variiert stark nach Kanton (0% bis ~3.3%). Bitte für Ihren Kanton anpassen.",
+c_acq:"Erwerbskosten",l_canton:"Kanton",l_canton_custom:"Benutzerdefiniert",l_mut:"Handänderungssteuer (%)",l_not:"Notargebühren (%)",l_reg:"Grundbuchgebühren (%)",
+n_acq:"Richtwerte — beim lokalen Notar zu verifizieren. Handänderungssteuer variiert von 0% (ZH, ZG, SZ…) bis ~3.3% (NE). Notar- und Grundbuchgebühren variieren ebenfalls.",
 c_eq:"Eigenkapital & Struktur",l_cash:"Bares Eigenkapital / Ersparnisse (CHF)",l_cmin:"Mindest-Cash (Kosten + 10% VW):",l_applymin:"⬆ Minimum anwenden",
 c_lpp:"2. Säule (BVG)",c_p3:"3. Säule (3a/3b)",l_avail:"Verfügbarer Betrag (CHF)",l_yield:"Geschätzte Jahresrendite (%)",
 l_ret:"Vorbezug (reduziert Darlehen)",l_nant:"Verpfändung (Sicherheit)",
-n_finma:"FINMA-Regeln: Eff. BLG ≤ 80% | Hartes EK (ohne BVG) ≥ 10% des VW. Erwerbskosten durch Barmittel. Verpfändung erlaubt BLG über 80% nominal — erhöht aber Darlehen und Tragbarkeit.",
+n_finma:"FINMA-Regeln: Eff. BLG ≤ 80% | Hartes EK (Bezüge inkl.) ≥ 10% des VW. Erwerbskosten durch Barmittel. Verpfändung erlaubt BLG über 80% nominal — erhöht aber Darlehen und Tragbarkeit.",
 c_rate:"Zinsen & Hypothekentyp",l_rate:"Verhandelter Effektivzins (%)",l_dur:"Laufzeit (Jahre)",l_mtype:"Hypothekentyp:",l_fixed:"Fest",l_mixed:"Gemischt",
 n_theo:"Der Theoriezinssatz für den Tragbarkeitstest beträgt 5%, unabhängig vom verhandelten Zins. Beide Szenarien werden parallel berechnet.",
 c_costs:"Unterhaltskosten",l_forfait:"Pauschale 1% Verkehrswert / Jahr",l_reelles:"Effektive Kosten",l_costs_ann:"Effektive Jahreskosten (CHF)",
@@ -913,7 +949,7 @@ c_monthly:"Monatliche Übersicht",l_theo_s:"theo.",l_int_m:"Zinsen / Monat",l_am
 l_tot_m:"Gesamtkosten / Monat",l_rev_m:"Monatliches Bruttoeinkommen",l_effort:"Tragbarkeit",
 c_aff:"Jährliche Tragbarkeit",l_rate_app:"Angewendeter Zins",l_int_a:"Jahreszinsen",l_am_a:"Amortisation / Jahr",
 l_chg_a:"Nebenkosten / Jahr",l_tot_a:"Gesamtbelastung / Jahr",l_debt:"Tragbarkeitsquote",
-c_struct:"Hypothekenstruktur",l_vv:"Verkehrswert",l_cashnet:"Netto-Barmittel nach Erwerbskosten",l_fpeff:"Effektives Eigenkapital",l_fphard:"Hartes EK (ohne BVG)",
+c_struct:"Hypothekenstruktur",l_vv:"Verkehrswert",l_cashnet:"Netto-Barmittel nach Erwerbskosten",l_fpeff:"Effektives Eigenkapital",l_fphard:"Hartes EK (Bezüge inkl.)",
 l_htot:"Gesamthypothek",l_h1:"1. Hypothek (≤65%)",l_h2:"2. Hypothek (65–80%)",l_ltv:"BLG nominal / effektiv",l_fppt:"Hartes EK / Verkehrswert",
 c_revcost:"Einkommen & Erwerbskosten",l_bruta:"Jahresbruttoeinkommen",l_brutm:"Monatliches Bruttoeinkommen",
 l_price2:"Kaufpreis",l_mut2:"Handänderungssteuer",l_not2:"Notar + Grundbuch",l_ftot:"Gesamte Erwerbskosten",l_ctot:"Gesamtkosten",l_fptot:"Eingesetztes EK",
@@ -1186,7 +1222,7 @@ function calculate() {
   const total_nant  = lpp_nant + p3_nant;
 
   const fp_effectifs = fp_cash_net + lpp_retrait + p3_retrait;
-  const fp_durs      = fp_cash_net + p3_retrait;  // hors LPP
+  const fp_durs      = fp_cash_net + lpp_retrait + p3_retrait;  // retraits = cash
 
   // ── 4. STRUCTURE HYPOTHÉCAIRE ──
   const seuil_1ere   = val_venale * 0.65;
@@ -1392,8 +1428,50 @@ function calculate() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// FEEDBACK
+// CANTON RATES
+// mutation = transfer tax, notaire = notary, registre = land registry
+// Sources: cantonal legislation — indicative, verify with local notary
 // ═══════════════════════════════════════════════════════════════════════
+const CANTON_RATES = {
+  VD: { mutation: 2.2, notaire: 0.5, registre: 0.3 },
+  GE: { mutation: 3.0, notaire: 0.4, registre: 0.3 },
+  FR: { mutation: 2.0, notaire: 0.5, registre: 0.3 },
+  NE: { mutation: 3.3, notaire: 0.4, registre: 0.2 },
+  VS: { mutation: 2.0, notaire: 0.5, registre: 0.3 },
+  JU: { mutation: 2.2, notaire: 0.5, registre: 0.3 },
+  TI: { mutation: 2.0, notaire: 0.5, registre: 0.3 },
+  ZH: { mutation: 0.0, notaire: 0.5, registre: 0.3 },
+  BE: { mutation: 1.8, notaire: 0.5, registre: 0.3 },
+  LU: { mutation: 1.5, notaire: 0.5, registre: 0.3 },
+  SG: { mutation: 1.0, notaire: 0.5, registre: 0.3 },
+  AG: { mutation: 0.0, notaire: 0.5, registre: 0.3 },
+  TG: { mutation: 1.0, notaire: 0.5, registre: 0.3 },
+  SO: { mutation: 2.2, notaire: 0.5, registre: 0.3 },
+  BS: { mutation: 1.5, notaire: 0.5, registre: 0.3 },
+  BL: { mutation: 1.5, notaire: 0.5, registre: 0.3 },
+  GR: { mutation: 2.0, notaire: 0.5, registre: 0.3 },
+  SZ: { mutation: 0.0, notaire: 0.5, registre: 0.3 },
+  ZG: { mutation: 0.0, notaire: 0.5, registre: 0.3 },
+  UR: { mutation: 1.5, notaire: 0.5, registre: 0.3 },
+  OW: { mutation: 1.0, notaire: 0.5, registre: 0.3 },
+  NW: { mutation: 1.0, notaire: 0.5, registre: 0.3 },
+  GL: { mutation: 1.0, notaire: 0.5, registre: 0.3 },
+  SH: { mutation: 1.0, notaire: 0.5, registre: 0.3 },
+  AR: { mutation: 1.0, notaire: 0.5, registre: 0.3 },
+  AI: { mutation: 1.0, notaire: 0.5, registre: 0.3 },
+};
+
+function applyCantonRates() {
+  const canton = document.getElementById('canton_select').value;
+  if (!canton || !CANTON_RATES[canton]) return;
+  const r = CANTON_RATES[canton];
+  document.getElementById('frais_mutation').value = r.mutation.toFixed(1);
+  document.getElementById('frais_notaire').value  = r.notaire.toFixed(1);
+  document.getElementById('frais_registre').value = r.registre.toFixed(1);
+  calculate();
+}
+
+
 function openFeedback() {
   document.getElementById('feedback-overlay').classList.add('open');
   document.getElementById('fb-message').focus();
@@ -1478,12 +1556,14 @@ const FIELDS = ['salaire_principal','salaire_conjoint','bonus_principal','bonus_
   'revenus_locatifs','revenus_locatifs_pct','prix_achat','valeur_venale','frais_mutation','frais_notaire',
   'frais_registre','fp_cash','lpp_montant','lpp_rendement','pilier3_montant',
   'pilier3_rendement','taux_reel','duree_credit','charges_reelles_annuelles'];
+const SELECTS = ['canton_select'];
 const RADIOS = ['mode_bonus','type_bien','lpp_mode','p3_mode','type_hypo','charges_mode'];
 
 function getState() {
   const state = { conjoint_actif: conjointActive };
   FIELDS.forEach(id => { state[id] = document.getElementById(id).value; });
   RADIOS.forEach(name => { state[name] = getRadio(name); });
+  SELECTS.forEach(id => { state[id] = document.getElementById(id).value; });
   return state;
 }
 
@@ -1493,6 +1573,9 @@ function applyState(state) {
     if (state[id] !== undefined) document.getElementById(id).value = state[id];
   });
   RADIOS.forEach(name => { if (state[name]) setRadio(name, state[name]); });
+  SELECTS.forEach(id => {
+    if (state[id] !== undefined) document.getElementById(id).value = state[id];
+  });
   if (state.conjoint_actif && !conjointActive) toggleConjoint();
   else if (!state.conjoint_actif && conjointActive) toggleConjoint();
 }
