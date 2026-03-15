@@ -272,7 +272,50 @@ input, select { font-family: var(--font); }
   .btn-header span { display: none; }
 }
 
-/* ── Privacy notice ───────────────────────────────────────────────────── */
+/* ── Feedback button & modal ──────────────────────────────────────────── */
+#feedback-btn {
+  position: fixed; bottom: 20px; left: 20px; z-index: 997;
+  background: var(--navy); color: #fff;
+  border: none; border-radius: 20px;
+  padding: 8px 14px; font-size: 12px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.2);
+  transition: background .15s, transform .15s;
+  font-family: var(--font);
+}
+#feedback-btn:hover { background: var(--accent); transform: translateY(-1px); }
+
+#feedback-overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.4); backdrop-filter: blur(2px);
+  align-items: center; justify-content: center;
+}
+#feedback-overlay.open { display: flex; }
+#feedback-modal {
+  background: var(--card); border-radius: 14px;
+  padding: 24px; width: 360px; max-width: calc(100vw - 32px);
+  box-shadow: 0 8px 40px rgba(0,0,0,.2);
+  position: relative;
+}
+#feedback-modal h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+#feedback-modal p  { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+#feedback-modal textarea {
+  width: 100%; min-height: 110px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 8px;
+  font-family: var(--font); font-size: 13px; color: var(--text);
+  background: #f4f7fb; resize: vertical; margin-bottom: 10px;
+  transition: border-color .15s;
+}
+#feedback-modal textarea:focus { outline: none; border-color: var(--accent2); background: #eaf1fb; }
+#feedback-modal .fb-actions { display: flex; justify-content: flex-end; gap: 8px; }
+#feedback-close {
+  position: absolute; top: 12px; right: 14px;
+  background: none; border: none; font-size: 18px;
+  color: var(--muted); cursor: pointer;
+}
+#feedback-close:hover { color: var(--text); }
+/* honeypot — hidden from humans */
+.fb-honey { display: none !important; }
 #privacy-notice {
   position: fixed; bottom: 20px; right: 20px; z-index: 998;
   background: var(--card); border: 1px solid var(--border);
@@ -654,6 +697,30 @@ input, select { font-family: var(--font); }
   </div>
 </div>
 </div>
+<button id="feedback-btn" onclick="openFeedback()">💬 <span data-i18n="fb_btn">Feedback</span></button>
+
+<div id="feedback-overlay" onclick="closeFeedbackOutside(event)">
+  <div id="feedback-modal">
+    <button id="feedback-close" onclick="closeFeedback()">✕</button>
+    <h3 data-i18n="fb_title">Share your feedback</h3>
+    <p data-i18n="fb_sub">A bug, a suggestion, a question? We read everything.</p>
+    <form id="feedback-form" onsubmit="submitFeedback(event)">
+      <!-- Honeypot — bots fill this, humans don't see it -->
+      <input class="fb-honey" type="text" name="_gotcha" tabindex="-1" autocomplete="off">
+      <textarea id="fb-message" name="message" data-i18n-placeholder="fb_placeholder" placeholder="Your message…" maxlength="1000" required></textarea>
+      <div class="fb-actions">
+        <button type="button" class="btn-secondary" onclick="closeFeedback()" data-i18n="fb_cancel">Cancel</button>
+        <button type="submit" class="btn-primary" id="fb-submit"><span data-i18n="fb_send">Send</span></button>
+      </div>
+    </form>
+    <div id="fb-success" style="display:none;text-align:center;padding:16px 0">
+      <div style="font-size:28px;margin-bottom:8px">✅</div>
+      <div style="font-weight:600;color:var(--ok)" data-i18n="fb_thanks">Thank you!</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px" data-i18n="fb_sent">Your message has been sent.</div>
+    </div>
+  </div>
+</div>
+
 <div id="privacy-notice" style="display:none">
   <span class="priv-icon">🔒</span>
   <div>
@@ -722,6 +789,9 @@ d_v15:"🔶 Long to amortise (10–15 yrs)",d_vn:"❌ Pledge preferable (>15 yrs
 d_tc:"Calculation done ✓",d_te:"Config exported ✓",d_ti:"Config imported ✓",d_terr:"Import error",d_reset:"Reset all fields?",
 priv_title:"Your data stays on your device",
 priv_body:"Nothing is stored on any server. Settings are saved locally in your browser and can be exported as a JSON file.",
+fb_btn:"Feedback",fb_title:"Share your feedback",fb_sub:"A bug, a suggestion, a question? We read everything.",
+fb_placeholder:"Your message…",fb_cancel:"Cancel",fb_send:"Send",fb_sending:"Sending…",
+fb_thanks:"Thank you!",fb_sent:"Your message has been sent.",
 d_disclaimer:"HypoCalc is provided for indicative purposes only and does not constitute financial, legal or tax advice. Results may not reflect actual bank conditions. No liability is accepted for decisions made based on this tool."},
 
 fr:{app_title:"HypoCalc",app_sub:"Canton de Vaud · Marché Lausanne",btn_calc:"CALCULER",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
@@ -777,6 +847,9 @@ d_v15:"🔶 Long à amortir (10–15 ans)",d_vn:"❌ Nantissement préférable (
 d_tc:"Calcul effectué ✓",d_te:"Config exportée ✓",d_ti:"Config importée ✓",d_terr:"Erreur import JSON",d_reset:"Réinitialiser tous les champs ?",
 priv_title:"Vos données restent sur votre appareil",
 priv_body:"Aucune donnée n'est stockée sur un serveur. Vos paramètres sont sauvegardés localement dans votre navigateur et peuvent être exportés en JSON.",
+fb_btn:"Retour",fb_title:"Partagez vos retours",fb_sub:"Un bug, une suggestion, une question ? On lit tout.",
+fb_placeholder:"Votre message…",fb_cancel:"Annuler",fb_send:"Envoyer",fb_sending:"Envoi…",
+fb_thanks:"Merci !",fb_sent:"Votre message a bien été envoyé.",
 d_disclaimer:"HypoCalc est fourni à titre indicatif uniquement et ne constitue pas un conseil financier, juridique ou fiscal. Les résultats peuvent ne pas refléter les conditions bancaires réelles. Aucune responsabilité n'est acceptée pour les décisions prises sur la base de cet outil."},
 
 de:{app_title:"HypoCalc",app_sub:"Kanton Waadt · Markt Lausanne",btn_calc:"BERECHNEN",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
@@ -832,6 +905,9 @@ d_v15:"🔶 Lange Amortisation (10–15 J.)",d_vn:"❌ Verpfändung vorzuziehen 
 d_tc:"Berechnung abgeschlossen ✓",d_te:"Konfiguration exportiert ✓",d_ti:"Konfiguration importiert ✓",d_terr:"Importfehler",d_reset:"Alle Felder zurücksetzen?",
 priv_title:"Ihre Daten bleiben auf Ihrem Gerät",
 priv_body:"Es werden keine Daten auf einem Server gespeichert. Einstellungen werden lokal in Ihrem Browser gespeichert und können als JSON exportiert werden.",
+fb_btn:"Feedback",fb_title:"Feedback geben",fb_sub:"Ein Bug, ein Vorschlag, eine Frage? Wir lesen alles.",
+fb_placeholder:"Ihre Nachricht…",fb_cancel:"Abbrechen",fb_send:"Senden",fb_sending:"Senden…",
+fb_thanks:"Danke!",fb_sent:"Ihre Nachricht wurde gesendet.",
 d_disclaimer:"HypoCalc dient ausschliesslich Informationszwecken und stellt keine Finanz-, Rechts- oder Steuerberatung dar. Die Ergebnisse spiegeln möglicherweise nicht die tatsächlichen Bankkonditionen wider. Für Entscheidungen auf Basis dieses Tools wird keine Haftung übernommen."}
 };
 
@@ -1284,26 +1360,74 @@ function calculate() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// PRIVACY NOTICE
+// FEEDBACK
 // ═══════════════════════════════════════════════════════════════════════
+function openFeedback() {
+  document.getElementById('feedback-overlay').classList.add('open');
+  document.getElementById('fb-message').focus();
+  // Update placeholder translation
+  const ta = document.getElementById('fb-message');
+  if (ta) ta.placeholder = i('fb_placeholder');
+}
+function closeFeedback() {
+  document.getElementById('feedback-overlay').classList.remove('open');
+  // Reset form after close
+  setTimeout(() => {
+    document.getElementById('feedback-form').style.display = '';
+    document.getElementById('fb-success').style.display = 'none';
+    document.getElementById('fb-message').value = '';
+    document.getElementById('fb-submit').disabled = false;
+  }, 300);
+}
+function closeFeedbackOutside(e) {
+  if (e.target === document.getElementById('feedback-overlay')) closeFeedback();
+}
+async function submitFeedback(e) {
+  e.preventDefault();
+  const btn = document.getElementById('fb-submit');
+  btn.disabled = true;
+  btn.querySelector('span').textContent = i('fb_sending') || '...';
+  try {
+    const res = await fetch('https://formspree.io/f/meerlznk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        message: document.getElementById('fb-message').value,
+        lang: currentLang,
+        _gotcha: document.querySelector('.fb-honey').value // honeypot check
+      })
+    });
+    if (res.ok) {
+      document.getElementById('feedback-form').style.display = 'none';
+      document.getElementById('fb-success').style.display = '';
+      setTimeout(() => closeFeedback(), 2500);
+    } else {
+      btn.disabled = false;
+      btn.querySelector('span').textContent = i('fb_send');
+      showToast(i('d_terr'));
+    }
+  } catch {
+    btn.disabled = false;
+    btn.querySelector('span').textContent = i('fb_send');
+    showToast(i('d_terr'));
+  }
+}
+
+
 function showPrivacyNotice() {
-  if (localStorage.getItem('hypo_priv_seen')) return;
   const el = document.getElementById('privacy-notice');
   el.style.display = 'flex';
-  // Translate
   const title = document.getElementById('priv-title');
   const body  = document.getElementById('priv-body');
   if (title) title.textContent = i('priv_title');
   if (body)  body.textContent  = i('priv_body');
-  // Auto-dismiss after 5s
-  setTimeout(() => dismissPrivacy(), 5000);
+  setTimeout(() => dismissPrivacy(), 10000);
 }
 function dismissPrivacy() {
   const el = document.getElementById('privacy-notice');
   if (!el) return;
   el.classList.add('hiding');
   setTimeout(() => { el.style.display = 'none'; }, 500);
-  localStorage.setItem('hypo_priv_seen', '1');
 }
 
 
