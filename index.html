@@ -504,7 +504,7 @@ input, select { font-family: var(--font); }
       <label class="form-label" data-i18n="l_price">Purchase price (CHF)</label>
       <input class="form-input" id="prix_achat" value="900'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
       <label class="form-label" data-i18n="l_mv">Estimated market value (CHF) — if different</label>
-      <input class="form-input" id="valeur_venale" value="900'000" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
+      <input class="form-input" id="valeur_venale" value="" placeholder="= purchase price" oninput="fmtOnInput(this)" onblur="fmtOnBlur(this)">
     </div>
     <div style="margin-top:10px;font-size:12px;color:var(--muted);margin-bottom:6px" data-i18n="l_ptype">Property type:</div>
     <div class="radio-group" id="rg_type_bien">
