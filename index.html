@@ -272,7 +272,29 @@ input, select { font-family: var(--font); }
   .btn-header span { display: none; }
 }
 
-/* ── Toast ────────────────────────────────────────────────────────────── */
+/* ── Privacy notice ───────────────────────────────────────────────────── */
+#privacy-notice {
+  position: fixed; bottom: 20px; right: 20px; z-index: 998;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  max-width: 280px; font-size: 12px; color: var(--muted);
+  display: flex; align-items: flex-start; gap: 10px;
+  animation: slideIn .4s ease;
+  transition: opacity .5s, transform .5s;
+}
+#privacy-notice.hiding { opacity: 0; transform: translateY(10px); }
+#privacy-notice .priv-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+#privacy-notice strong { display: block; color: var(--text); font-size: 12px; margin-bottom: 3px; }
+#privacy-notice button {
+  position: absolute; top: 8px; right: 8px;
+  background: none; border: none; color: var(--muted);
+  font-size: 14px; cursor: pointer; line-height: 1; padding: 2px 4px;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 #toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
   background: var(--navy); color: #fff; padding: 10px 20px; border-radius: 20px;
@@ -632,6 +654,15 @@ input, select { font-family: var(--font); }
   </div>
 </div>
 </div>
+<div id="privacy-notice" style="display:none">
+  <span class="priv-icon">🔒</span>
+  <div>
+    <strong id="priv-title">Your data stays on your device</strong>
+    <span id="priv-body">Nothing is stored on any server. Settings are saved locally in your browser. You can export or import them as a JSON file.</span>
+  </div>
+  <button onclick="dismissPrivacy()" title="Close">✕</button>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -689,6 +720,8 @@ d_rleg:"Return rates: LPP",d_rp3:"/ yr | 3rd pillar",d_rrate:"| Actual rate",d_y
 d_never:"Never (pledge dominates)",d_v5:"✅ Withdrawal recommended (<5 yrs)",d_v10:"⚠️ Withdrawal advantageous (5–10 yrs)",
 d_v15:"🔶 Long to amortise (10–15 yrs)",d_vn:"❌ Pledge preferable (>15 yrs)",d_vfree:"✅ Withdrawal with no tax cost",d_vpledge:"✅ Pledge always preferable",
 d_tc:"Calculation done ✓",d_te:"Config exported ✓",d_ti:"Config imported ✓",d_terr:"Import error",d_reset:"Reset all fields?",
+priv_title:"Your data stays on your device",
+priv_body:"Nothing is stored on any server. Settings are saved locally in your browser and can be exported as a JSON file.",
 d_disclaimer:"HypoCalc is provided for indicative purposes only and does not constitute financial, legal or tax advice. Results may not reflect actual bank conditions. No liability is accepted for decisions made based on this tool."},
 
 fr:{app_title:"HypoCalc",app_sub:"Canton de Vaud · Marché Lausanne",btn_calc:"CALCULER",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
@@ -742,6 +775,8 @@ d_rleg:"Taux de rendement : LPP",d_rp3:"/ an | 3ème pilier",d_rrate:"| Taux ré
 d_never:"Jamais (nantissement domine)",d_v5:"✅ Retrait recommandé (< 5 ans)",d_v10:"⚠️ Retrait avantageux (5–10 ans)",
 d_v15:"🔶 Long à amortir (10–15 ans)",d_vn:"❌ Nantissement préférable (>15 ans)",d_vfree:"✅ Retrait sans coût fiscal",d_vpledge:"✅ Nantissement toujours préférable",
 d_tc:"Calcul effectué ✓",d_te:"Config exportée ✓",d_ti:"Config importée ✓",d_terr:"Erreur import JSON",d_reset:"Réinitialiser tous les champs ?",
+priv_title:"Vos données restent sur votre appareil",
+priv_body:"Aucune donnée n'est stockée sur un serveur. Vos paramètres sont sauvegardés localement dans votre navigateur et peuvent être exportés en JSON.",
 d_disclaimer:"HypoCalc est fourni à titre indicatif uniquement et ne constitue pas un conseil financier, juridique ou fiscal. Les résultats peuvent ne pas refléter les conditions bancaires réelles. Aucune responsabilité n'est acceptée pour les décisions prises sur la base de cet outil."},
 
 de:{app_title:"HypoCalc",app_sub:"Kanton Waadt · Markt Lausanne",btn_calc:"BERECHNEN",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
@@ -795,6 +830,8 @@ d_rleg:"Renditen: BVG",d_rp3:"/ J. | 3. Säule",d_rrate:"| Effektivzins",d_yrs:"
 d_never:"Nie (Verpfändung dominiert)",d_v5:"✅ Vorbezug empfohlen (<5 J.)",d_v10:"⚠️ Vorbezug vorteilhaft (5–10 J.)",
 d_v15:"🔶 Lange Amortisation (10–15 J.)",d_vn:"❌ Verpfändung vorzuziehen (>15 J.)",d_vfree:"✅ Vorbezug ohne Steuerkosten",d_vpledge:"✅ Verpfändung immer vorzuziehen",
 d_tc:"Berechnung abgeschlossen ✓",d_te:"Konfiguration exportiert ✓",d_ti:"Konfiguration importiert ✓",d_terr:"Importfehler",d_reset:"Alle Felder zurücksetzen?",
+priv_title:"Ihre Daten bleiben auf Ihrem Gerät",
+priv_body:"Es werden keine Daten auf einem Server gespeichert. Einstellungen werden lokal in Ihrem Browser gespeichert und können als JSON exportiert werden.",
 d_disclaimer:"HypoCalc dient ausschliesslich Informationszwecken und stellt keine Finanz-, Rechts- oder Steuerberatung dar. Die Ergebnisse spiegeln möglicherweise nicht die tatsächlichen Bankkonditionen wider. Für Entscheidungen auf Basis dieses Tools wird keine Haftung übernommen."}
 };
 
@@ -1247,8 +1284,29 @@ function calculate() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// APPLY CASH MIN
+// PRIVACY NOTICE
 // ═══════════════════════════════════════════════════════════════════════
+function showPrivacyNotice() {
+  if (localStorage.getItem('hypo_priv_seen')) return;
+  const el = document.getElementById('privacy-notice');
+  el.style.display = 'flex';
+  // Translate
+  const title = document.getElementById('priv-title');
+  const body  = document.getElementById('priv-body');
+  if (title) title.textContent = i('priv_title');
+  if (body)  body.textContent  = i('priv_body');
+  // Auto-dismiss after 5s
+  setTimeout(() => dismissPrivacy(), 5000);
+}
+function dismissPrivacy() {
+  const el = document.getElementById('privacy-notice');
+  if (!el) return;
+  el.classList.add('hiding');
+  setTimeout(() => { el.style.display = 'none'; }, 500);
+  localStorage.setItem('hypo_priv_seen', '1');
+}
+
+
 function applyCashMin() {
   if (window._cashMinVal) {
     document.getElementById('fp_cash').value = fmtInput(window._cashMinVal);
@@ -1354,6 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadState();
   updateBonusUI();
   calculate();
+  showPrivacyNotice();
 });
 
 </script>
