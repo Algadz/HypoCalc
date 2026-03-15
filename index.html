@@ -851,10 +851,13 @@ c_ana:"Comparative analysis: Withdrawal vs Pledge",
 n_ana:"Net annual delta = Interest saving (withdrawal) − Lost return (pledge). Positive → withdrawal more advantageous. Break-even = years to recover the tax cost.",
 l_lpponly:"LPP only",l_p3only:"3rd pillar only",l_cumyr:"Combined (same year)",
 l_anam:"Amount concerned",l_anaeco:"Interest saving / year",l_anarend:"Annual return if kept",l_anadelta:"Net annual delta",l_anatax:"Withdrawal tax (one-off)",l_anabreak:"Break-even",l_anav:"Verdict",
-d_ftot:"Total costs:",d_cout:"Total cost:",d_cmin:"Minimum cash (costs + 10% MV):",
+d_ftot:"Total costs:",d_cout:"Total cost:",d_cmin:"Minimum cash required (costs + 10% MV):",
 d_fok:"✅ Costs covered — remaining cash:",d_fnok:"❌ Insufficient cash for costs (missing",
+d_frais_ok:"Costs covered — remaining cash:",d_frais_nok:"Insufficient cash for costs — missing",
 d_ltv_eff_ok:"✅ Eff. LTV",d_ltv_eff_nok:"❌ Eff. LTV",d_nom:"nom.",
-d_ltv_ok:"✅ LTV",d_ltv_nok:"❌ LTV",d_fp_ok:"✅ Hard equity",d_fp_nok:"❌ Hard equity",
+d_ltv_ok:"LTV",d_ltv_nok:"LTV",d_fp_ok:"Hard equity",d_fp_nok:"Hard equity",
+d_ltv_cap:"= 80% cap — loan capped, funding gap:",
+d_gap_nok:"Funding gap — equity insufficient to complete purchase:",
 d_none:"✅ None",d_ok33:"✅ Feasible (≤33%)",d_warn35:"⚠️ Borderline — strong profile (≤35%)",
 d_warn38:"🔶 Exceptional / alternative bank (≤38%)",d_nok:">38% ❌ Not feasible",
 d_rleg:"Return rates: LPP",d_rp3:"/ yr | 3rd pillar",d_rrate:"| Actual rate",d_yrs:"yrs",
@@ -912,7 +915,9 @@ l_anam:"Montant concerné",l_anaeco:"Économie intérêts / an",l_anarend:"Rende
 d_ftot:"Total frais :",d_cout:"Coût total :",d_cmin:"Cash minimum requis (frais + 10% VV) :",
 d_fok:"✅ Frais couverts — cash restant :",d_fnok:"❌ Cash insuffisant pour frais (manque",
 d_ltv_eff_ok:"✅ LTV eff.",d_ltv_eff_nok:"❌ LTV effective",d_nom:"nom.",
-d_ltv_ok:"✅ LTV",d_ltv_nok:"❌ LTV",d_fp_ok:"✅ FP durs",d_fp_nok:"❌ FP durs",
+d_ltv_ok:"LTV",d_ltv_nok:"LTV",d_fp_ok:"FP durs",d_fp_nok:"FP durs",
+d_frais_ok:"Frais couverts — cash restant :",d_frais_nok:"Cash insuffisant — manque",
+d_ltv_cap:"= plafond 80% — hypothèque cappée, gap :",d_gap_nok:"Gap de financement — apport insuffisant :",
 d_none:"✅ Aucun",d_ok33:"✅ Finançable (≤33%)",d_warn35:"⚠️ Limite — profil solide requis (≤35%)",
 d_warn38:"🔶 Cas exceptionnel / banque alternative (≤38%)",d_nok:">38% ❌ Non finançable",
 d_rleg:"Taux de rendement : LPP",d_rp3:"/ an | 3ème pilier",d_rrate:"| Taux réel",d_yrs:"ans",
@@ -970,7 +975,9 @@ l_anam:"Betroffener Betrag",l_anaeco:"Zinseinsparung / Jahr",l_anarend:"Jahresre
 d_ftot:"Gesamtkosten:",d_cout:"Gesamtkosten:",d_cmin:"Mindest-Cash (Kosten + 10% VW):",
 d_fok:"✅ Kosten gedeckt — verbleibende Barmittel:",d_fnok:"❌ Unzureichende Barmittel (fehlt",
 d_ltv_eff_ok:"✅ Eff. BLG",d_ltv_eff_nok:"❌ Eff. BLG",d_nom:"nom.",
-d_ltv_ok:"✅ BLG",d_ltv_nok:"❌ BLG",d_fp_ok:"✅ Hartes EK",d_fp_nok:"❌ Hartes EK",
+d_ltv_ok:"BLG",d_ltv_nok:"BLG",d_fp_ok:"Hartes EK",d_fp_nok:"Hartes EK",
+d_frais_ok:"Kosten gedeckt — verbleibende Barmittel:",d_frais_nok:"Unzureichende Barmittel — fehlt",
+d_ltv_cap:"= 80%-Grenze — Hypothek begrenzt, Lücke:",d_gap_nok:"Finanzierungslücke — Eigenkapital unzureichend:",
 d_none:"✅ Keines",d_ok33:"✅ Finanzierbar (≤33%)",d_warn35:"⚠️ Grenzwertig — gutes Profil erforderlich (≤35%)",
 d_warn38:"🔶 Ausnahmefall / Alternativbank (≤38%)",d_nok:">38% ❌ Nicht finanzierbar",
 d_rleg:"Renditen: BVG",d_rp3:"/ J. | 3. Säule",d_rrate:"| Effektivzins",d_yrs:"J.",
@@ -1219,7 +1226,7 @@ function calculate() {
   const cash_min = total_frais + val_venale * FP_DURS_MIN;
   window._cashMinVal = cash_min;
   const cashMinEl = document.getElementById('cash_min_label');
-  cashMinEl.textContent = `Cash minimum requis (frais + 10% VV) : ${fmtCHF(cash_min)}`;
+  cashMinEl.textContent = `${i('d_cmin')} ${fmtCHF(cash_min)}`;
   cashMinEl.style.color = fp_cash >= cash_min ? 'var(--ok)' : 'var(--warn)';
 
   const lpp_retrait = lpp_mode === 'retrait' ? lpp_montant : 0;
@@ -1255,15 +1262,19 @@ function calculate() {
   const finmaEl = document.getElementById('finma_summary');
   finmaEl.innerHTML = '';
   const pills = [
-    [frais_ok, frais_ok ? `✅ Frais couverts (cash net : ${fmtCHF(fp_cash_net)})` : `❌ Cash insuffisant pour frais (manque ${fmtCHF(total_frais - fp_cash)})`],
+    [frais_ok,
+      frais_ok
+        ? `✅ ${i('d_frais_ok')} ${fmtCHF(fp_cash_net)}`
+        : `❌ ${i('d_frais_nok')} ${fmtCHF(total_frais - fp_cash)}`],
     [ltv_ok && funding_gap_ok,
-      funding_gap > 0
-        ? `⚠️ LTV ${fmtPct(ltv_nominale*100)} = plafond 80% — hypothèque cappée, gap de ${fmtCHF(funding_gap)}`
-        : total_nant > 0
-          ? (ltv_ok ? `✅ LTV eff. ${fmtPct(ltv_effective*100)} ≤ 80% (nom. ${fmtPct(ltv_nominale*100)})` : `❌ LTV effective ${fmtPct(ltv_effective*100)} > 80%`)
-          : (ltv_ok ? `✅ LTV ${fmtPct(ltv_nominale*100)} ≤ 80%` : `❌ LTV ${fmtPct(ltv_nominale*100)} > 80%`)],
-    [fp_durs_ok, fp_durs_ok ? `✅ FP durs ${fmtPct(fp_durs_pct*100)} ≥ 10%` : `❌ FP durs ${fmtPct(fp_durs_pct*100)} < 10%`],
-    ...(!funding_gap_ok ? [[false, `❌ Apport insuffisant — gap de financement : ${fmtCHF(funding_gap)} (hypothèque plafonnée à 80% LTV, apport ne couvre pas le reste)`]] : []),
+      total_nant > 0
+        ? (ltv_ok ? `✅ ${i('d_ltv_eff_ok')} ${fmtPct(ltv_effective*100)} ≤ 80% (${i('d_nom')} ${fmtPct(ltv_nominale*100)})` : `❌ ${i('d_ltv_eff_nok')} ${fmtPct(ltv_effective*100)} > 80%`)
+        : (ltv_ok ? `✅ ${i('d_ltv_ok')} ${fmtPct(ltv_nominale*100)} ≤ 80%` : `❌ ${i('d_ltv_nok')} ${fmtPct(ltv_nominale*100)} > 80%`)],
+    [fp_durs_ok,
+      fp_durs_ok
+        ? `✅ ${i('d_fp_ok')} ${fmtPct(fp_durs_pct*100)} ≥ 10%`
+        : `❌ ${i('d_fp_nok')} ${fmtPct(fp_durs_pct*100)} < 10%`],
+    ...(!funding_gap_ok ? [[false, `❌ ${i('d_gap_nok')} ${fmtCHF(funding_gap)}`]] : []),
   ];
   pills.forEach(([ok, txt]) => {
     const span = document.createElement('span');
