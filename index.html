@@ -606,7 +606,7 @@ input, select { font-family: var(--font); }
 
 // ════════════════════════ TRANSLATIONS ════════════════════
 const I18N={
-en:{app_title:"Swiss Mortgage Simulator",app_sub:"Canton de Vaud · Lausanne market",btn_calc:"CALCULATE",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
+en:{app_title:"HypoCalc",app_sub:"Canton de Vaud · Lausanne market",btn_calc:"CALCULATE",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
 tab1:"① Income",tab2:"② Property & Equity",tab3:"③ Mortgage & Rates",tab4:"④ Results & Summary",
 c_salaires:"Annual gross salaries",l_sal_main:"Annual gross salary — main applicant (CHF)",l_incl:"Include partner / spouse salary",l_sal_part:"Annual gross salary — partner (CHF)",
 c_bonus:"Bonus",l_bon_how:"Bonus treatment:",l_bon_ign:"Ignore",l_bon_avg:"3-year average (enter average)",l_bon_100:"100% of latest bonus",
@@ -651,9 +651,10 @@ d_warn38:"🔶 Exceptional / alternative bank (≤38%)",d_nok:">38% ❌ Not feas
 d_rleg:"Return rates: LPP",d_rp3:"/ yr | 3rd pillar",d_rrate:"| Actual rate",d_yrs:"yrs",
 d_never:"Never (pledge dominates)",d_v5:"✅ Withdrawal recommended (<5 yrs)",d_v10:"⚠️ Withdrawal advantageous (5–10 yrs)",
 d_v15:"🔶 Long to amortise (10–15 yrs)",d_vn:"❌ Pledge preferable (>15 yrs)",d_vfree:"✅ Withdrawal with no tax cost",d_vpledge:"✅ Pledge always preferable",
-d_tc:"Calculation done ✓",d_te:"Config exported ✓",d_ti:"Config imported ✓",d_terr:"Import error",d_reset:"Reset all fields?"},
+d_tc:"Calculation done ✓",d_te:"Config exported ✓",d_ti:"Config imported ✓",d_terr:"Import error",d_reset:"Reset all fields?",
+d_disclaimer:"HypoCalc is provided for indicative purposes only and does not constitute financial, legal or tax advice. Results may not reflect actual bank conditions. No liability is accepted for decisions made based on this tool."},
 
-fr:{app_title:"Simulateur Hypothécaire Suisse",app_sub:"Canton de Vaud · Marché Lausanne",btn_calc:"CALCULER",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
+fr:{app_title:"HypoCalc",app_sub:"Canton de Vaud · Marché Lausanne",btn_calc:"CALCULER",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
 tab1:"① Revenus",tab2:"② Bien & Fonds propres",tab3:"③ Hypothèque & Taux",tab4:"④ Résultats & Bilan",
 c_salaires:"Salaires bruts annuels",l_sal_main:"Salaire brut annuel — demandeur principal (CHF)",l_incl:"Inclure salaire conjoint / partenaire",l_sal_part:"Salaire brut annuel — conjoint (CHF)",
 c_bonus:"Bonus",l_bon_how:"Traitement du bonus :",l_bon_ign:"Ignorer",l_bon_avg:"Moyenne 3 ans (saisir la moyenne)",l_bon_100:"100% du bonus récent",
@@ -698,9 +699,10 @@ d_warn38:"🔶 Cas exceptionnel / banque alternative (≤38%)",d_nok:">38% ❌ N
 d_rleg:"Taux de rendement : LPP",d_rp3:"/ an | 3ème pilier",d_rrate:"| Taux réel",d_yrs:"ans",
 d_never:"Jamais (nantissement domine)",d_v5:"✅ Retrait recommandé (< 5 ans)",d_v10:"⚠️ Retrait avantageux (5–10 ans)",
 d_v15:"🔶 Long à amortir (10–15 ans)",d_vn:"❌ Nantissement préférable (>15 ans)",d_vfree:"✅ Retrait sans coût fiscal",d_vpledge:"✅ Nantissement toujours préférable",
-d_tc:"Calcul effectué ✓",d_te:"Config exportée ✓",d_ti:"Config importée ✓",d_terr:"Erreur import JSON",d_reset:"Réinitialiser tous les champs ?"},
+d_tc:"Calcul effectué ✓",d_te:"Config exportée ✓",d_ti:"Config importée ✓",d_terr:"Erreur import JSON",d_reset:"Réinitialiser tous les champs ?",
+d_disclaimer:"HypoCalc est fourni à titre indicatif uniquement et ne constitue pas un conseil financier, juridique ou fiscal. Les résultats peuvent ne pas refléter les conditions bancaires réelles. Aucune responsabilité n'est acceptée pour les décisions prises sur la base de cet outil."},
 
-de:{app_title:"Schweizer Hypothekenrechner",app_sub:"Kanton Waadt · Markt Lausanne",btn_calc:"BERECHNEN",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
+de:{app_title:"HypoCalc",app_sub:"Kanton Waadt · Markt Lausanne",btn_calc:"BERECHNEN",btn_export:"Export",btn_import:"Import",btn_reset:"Reset",
 tab1:"① Einkommen",tab2:"② Immobilie & EK",tab3:"③ Hypothek & Zinsen",tab4:"④ Ergebnisse",
 c_salaires:"Jahresbruttolöhne",l_sal_main:"Jahresbruttolohn — Hauptantragsteller (CHF)",l_incl:"Lohn Partner/in einbeziehen",l_sal_part:"Jahresbruttolohn — Partner/in (CHF)",
 c_bonus:"Bonus",l_bon_how:"Bonusbehandlung:",l_bon_ign:"Ignorieren",l_bon_avg:"3-J.-Durchschnitt (Durchschnitt eingeben)",l_bon_100:"100% des letzten Bonus",
@@ -745,7 +747,8 @@ d_warn38:"🔶 Ausnahmefall / Alternativbank (≤38%)",d_nok:">38% ❌ Nicht fin
 d_rleg:"Renditen: BVG",d_rp3:"/ J. | 3. Säule",d_rrate:"| Effektivzins",d_yrs:"J.",
 d_never:"Nie (Verpfändung dominiert)",d_v5:"✅ Vorbezug empfohlen (<5 J.)",d_v10:"⚠️ Vorbezug vorteilhaft (5–10 J.)",
 d_v15:"🔶 Lange Amortisation (10–15 J.)",d_vn:"❌ Verpfändung vorzuziehen (>15 J.)",d_vfree:"✅ Vorbezug ohne Steuerkosten",d_vpledge:"✅ Verpfändung immer vorzuziehen",
-d_tc:"Berechnung abgeschlossen ✓",d_te:"Konfiguration exportiert ✓",d_ti:"Konfiguration importiert ✓",d_terr:"Importfehler",d_reset:"Alle Felder zurücksetzen?"}
+d_tc:"Berechnung abgeschlossen ✓",d_te:"Konfiguration exportiert ✓",d_ti:"Konfiguration importiert ✓",d_terr:"Importfehler",d_reset:"Alle Felder zurücksetzen?",
+d_disclaimer:"HypoCalc dient ausschliesslich Informationszwecken und stellt keine Finanz-, Rechts- oder Steuerberatung dar. Die Ergebnisse spiegeln möglicherweise nicht die tatsächlichen Bankkonditionen wider. Für Entscheidungen auf Basis dieses Tools wird keine Haftung übernommen."}
 };
 
 let currentLang='en';
@@ -1267,7 +1270,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </script>
 
-<footer style="text-align:center;padding:10px 16px 14px;font-size:10px;color:#9aaabb;font-family:'Outfit',sans-serif;letter-spacing:.01em">
+<footer style="text-align:center;padding:10px 16px 14px;font-size:10px;color:#9aaabb;font-family:'Outfit',sans-serif;letter-spacing:.01em" data-i18n="d_disclaimer">
   This calculator is provided for indicative purposes only and does not constitute financial, legal or tax advice. Results may not reflect actual bank conditions. No liability is accepted for decisions made based on this tool. Always consult a qualified financial adviser before proceeding.
 </footer>
 
