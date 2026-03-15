@@ -664,6 +664,8 @@ input, select { font-family: var(--font); }
       <div class="cap-sep"></div>
       <span class="cap-label" data-i18n="l_miss33">Missing equity for 33%</span>
       <span class="cap-value" id="cap_manque_33">—</span>
+      <span class="cap-label" id="lbl_gap" data-i18n="l_funding_gap">Funding gap (LTV cap)</span>
+      <span class="cap-value" id="cap_funding_gap">—</span>
     </div>
   </div>
 
@@ -832,7 +834,7 @@ c_costs:"Property running costs",l_forfait:"Standard 1% of market value / year",
 c_verdict:"Affordability verdict",l_rate_real:"Actual rate",l_rate_theo:"Theoretical rate 5%",
 l_thresh:"≤33% ✅ Standard | ≤38% 🔶 Exceptional | >38% ❌ Refused",
 c_cap:"Borrowing capacity — Summary",l_cap33:"Max loan based on income (33%, 5% test)",
-l_cap_ltv:"Max loan LTV 80% + pledge",l_cap_nec:"Required loan with your equity",l_miss33:"Missing equity for 33%",
+l_cap_ltv:"Max loan LTV 80% + pledge",l_cap_nec:"Required loan with your equity",l_miss33:"Missing equity for 33%",l_funding_gap:"Funding gap (equity + loan < price)",
 c_monthly:"Monthly summary",l_theo_s:"theo.",l_int_m:"Interest / month",l_am_m:"Amortisation / month",l_chg_m:"Running costs / month",
 l_tot_m:"Total monthly",l_rev_m:"Gross monthly income",l_effort:"Debt ratio",
 c_aff:"Annual affordability",l_rate_app:"Rate applied",l_int_a:"Annual interest",l_am_a:"Amortisation / year",
@@ -890,7 +892,7 @@ c_costs:"Charges du bien",l_forfait:"Forfait 1% valeur vénale / an (bancaire)",
 c_verdict:"Verdict d'affordability",l_rate_real:"Taux réel",l_rate_theo:"Taux théorique 5%",
 l_thresh:"≤33% ✅ Standard | ≤38% 🔶 Cas exceptionnels | >38% ❌ Refus",
 c_cap:"Capacité d'emprunt — Synthèse",l_cap33:"Emprunt max selon revenus (33%, test 5%)",
-l_cap_ltv:"Emprunt max LTV 80% + nantissement",l_cap_nec:"Emprunt nécessaire avec votre apport",l_miss33:"Apport cash manquant pour 33%",
+l_cap_ltv:"Emprunt max LTV 80% + nantissement",l_cap_nec:"Emprunt nécessaire avec votre apport",l_miss33:"Apport cash manquant pour 33%",l_funding_gap:"Gap de financement (apport + hypothèque < prix)",
 c_monthly:"Bilan mensuel",l_theo_s:"théo.",l_int_m:"Intérêts / mois",l_am_m:"Amortissement / mois",l_chg_m:"Charges / mois",
 l_tot_m:"Total mensuel",l_rev_m:"Revenu brut mensuel",l_effort:"Taux d'effort",
 c_aff:"Affordability annuelle",l_rate_app:"Taux appliqué",l_int_a:"Intérêts annuels",l_am_a:"Amortissement / an",
@@ -948,7 +950,7 @@ c_costs:"Unterhaltskosten",l_forfait:"Pauschale 1% Verkehrswert / Jahr",l_reelle
 c_verdict:"Tragbarkeitsergebnis",l_rate_real:"Effektivzins",l_rate_theo:"Theoretischer Zinssatz 5%",
 l_thresh:"≤33% ✅ Standard | ≤38% 🔶 Ausnahmen | >38% ❌ Abgelehnt",
 c_cap:"Kreditkapazität — Zusammenfassung",l_cap33:"Max. Darlehen nach Einkommen (33%, 5%-Test)",
-l_cap_ltv:"Max. Darlehen BLG 80% + Verpfändung",l_cap_nec:"Benötigtes Darlehen mit Ihrem EK",l_miss33:"Fehlendes EK für 33%",
+l_cap_ltv:"Max. Darlehen BLG 80% + Verpfändung",l_cap_nec:"Benötigtes Darlehen mit Ihrem EK",l_miss33:"Fehlendes EK für 33%",l_funding_gap:"Finanzierungslücke (EK + Hypo < Preis)",
 c_monthly:"Monatliche Übersicht",l_theo_s:"theo.",l_int_m:"Zinsen / Monat",l_am_m:"Amortisation / Monat",l_chg_m:"Nebenkosten / Monat",
 l_tot_m:"Gesamtkosten / Monat",l_rev_m:"Monatliches Bruttoeinkommen",l_effort:"Tragbarkeit",
 c_aff:"Jährliche Tragbarkeit",l_rate_app:"Angewendeter Zins",l_int_a:"Jahreszinsen",l_am_a:"Amortisation / Jahr",
@@ -1244,19 +1246,29 @@ function calculate() {
   const ltv_ok    = ltv_effective <= LTV_MAX;
   const fp_durs_ok = fp_durs_pct >= FP_DURS_MIN;
 
+  // Funding gap: loan capped by LTV but equity doesn't cover the rest
+  const hypo_needed   = Math.max(0, val_venale - fp_effectifs);
+  const funding_gap   = Math.max(0, hypo_needed - hypo_total);
+  const funding_gap_ok = funding_gap === 0;
+
   // FINMA summary pills
   const finmaEl = document.getElementById('finma_summary');
   finmaEl.innerHTML = '';
   const pills = [
     [frais_ok, frais_ok ? `✅ Frais couverts (cash net : ${fmtCHF(fp_cash_net)})` : `❌ Cash insuffisant pour frais (manque ${fmtCHF(total_frais - fp_cash)})`],
-    [ltv_ok, total_nant > 0
-      ? (ltv_ok ? `✅ LTV eff. ${fmtPct(ltv_effective*100)} ≤ 80% (nom. ${fmtPct(ltv_nominale*100)})` : `❌ LTV effective ${fmtPct(ltv_effective*100)} > 80%`)
-      : (ltv_ok ? `✅ LTV ${fmtPct(ltv_nominale*100)} ≤ 80%` : `❌ LTV ${fmtPct(ltv_nominale*100)} > 80%`)],
+    [ltv_ok && funding_gap_ok,
+      funding_gap > 0
+        ? `⚠️ LTV ${fmtPct(ltv_nominale*100)} = plafond 80% — hypothèque cappée, gap de ${fmtCHF(funding_gap)}`
+        : total_nant > 0
+          ? (ltv_ok ? `✅ LTV eff. ${fmtPct(ltv_effective*100)} ≤ 80% (nom. ${fmtPct(ltv_nominale*100)})` : `❌ LTV effective ${fmtPct(ltv_effective*100)} > 80%`)
+          : (ltv_ok ? `✅ LTV ${fmtPct(ltv_nominale*100)} ≤ 80%` : `❌ LTV ${fmtPct(ltv_nominale*100)} > 80%`)],
     [fp_durs_ok, fp_durs_ok ? `✅ FP durs ${fmtPct(fp_durs_pct*100)} ≥ 10%` : `❌ FP durs ${fmtPct(fp_durs_pct*100)} < 10%`],
+    ...(!funding_gap_ok ? [[false, `❌ Apport insuffisant — gap de financement : ${fmtCHF(funding_gap)} (hypothèque plafonnée à 80% LTV, apport ne couvre pas le reste)`]] : []),
   ];
   pills.forEach(([ok, txt]) => {
     const span = document.createElement('span');
-    span.className = 'status-pill ' + (ok ? 'ok' : 'nok');
+    const isWarn = txt.startsWith('⚠️');
+    span.className = 'status-pill ' + (isWarn ? 'warn' : ok ? 'ok' : 'nok');
     span.textContent = txt;
     finmaEl.appendChild(span);
   });
@@ -1331,6 +1343,20 @@ function calculate() {
   if (el33) {
     if (manque33 <= 0) { el33.textContent = i('d_none'); el33.className = 'cap-value ok'; }
     else { el33.textContent = '❌ ' + fmtCHF(manque33); el33.className = 'cap-value nok'; }
+  }
+
+  // Funding gap row — show only when cap is binding
+  const elGap = document.getElementById('cap_funding_gap');
+  const lblGap = document.getElementById('lbl_gap');
+  if (elGap) {
+    if (funding_gap <= 0) {
+      elGap.textContent = '✅ ' + i('d_none'); elGap.className = 'cap-value ok';
+      if (lblGap) lblGap.style.opacity = '.5';
+    } else {
+      elGap.textContent = '❌ ' + fmtCHF(funding_gap);
+      elGap.className = 'cap-value nok';
+      if (lblGap) lblGap.style.opacity = '1';
+    }
   }
 
   // ── 9. BILAN MENSUEL & AFFORDABILITY DISPLAY ──
