@@ -1268,8 +1268,11 @@ function calculate() {
         : `❌ ${i('d_frais_nok')} ${fmtCHF(total_frais - fp_cash)}`],
     [ltv_ok && funding_gap_ok,
       total_nant > 0
-        ? (ltv_ok ? `✅ ${i('d_ltv_eff_ok')} ${fmtPct(ltv_effective*100)} ≤ 80% (${i('d_nom')} ${fmtPct(ltv_nominale*100)})` : `❌ ${i('d_ltv_eff_nok')} ${fmtPct(ltv_effective*100)} > 80%`)
-        : (ltv_ok ? `✅ ${i('d_ltv_ok')} ${fmtPct(ltv_nominale*100)} ≤ 80%` : `❌ ${i('d_ltv_nok')} ${fmtPct(ltv_nominale*100)} > 80%`)],
+        ? (ltv_ok && funding_gap_ok ? `✅ ${i('d_ltv_eff_ok')} ${fmtPct(ltv_effective*100)} ≤ 80% (${i('d_nom')} ${fmtPct(ltv_nominale*100)})` : `❌ ${i('d_ltv_eff_nok')} ${fmtPct(ltv_effective*100)} > 80%`)
+        : (() => { const ltv_req = val_venale > 0 ? hypo_needed / val_venale : 0;
+                   return ltv_req <= LTV_MAX
+                     ? `✅ ${i('d_ltv_ok')} ${fmtPct(ltv_req*100)} ≤ 80%`
+                     : `❌ ${i('d_ltv_nok')} ${fmtPct(ltv_req*100)} > 80%`; })()],
     [fp_durs_ok,
       fp_durs_ok
         ? `✅ ${i('d_fp_ok')} ${fmtPct(fp_durs_pct*100)} ≥ 10%`
@@ -1682,7 +1685,7 @@ function importJSON(evt) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// RESEt
+// RESET
 // ═══════════════════════════════════════════════════════════════════════
 function resetAll() {
   if (!confirm('Réinitialiser tous les champs ?')) return;
