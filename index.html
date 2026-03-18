@@ -1010,6 +1010,7 @@ function setLang(l){
   currentLang=l;
   localStorage.setItem('hypo_lang',l);
   document.getElementById('lang-select').value=l;
+  utrack('language', { lang: l });
   applyLang();
   calculate();
 }
@@ -1021,7 +1022,7 @@ function setLang(l){
 const TAUX_THEO   = 0.05;
 const LTV_MAX     = 0.80;
 const FP_DURS_MIN = 0.10;
-const SEUIL_33    = 0.33;
+const SEUIL_33    = 1/3;
 const SEUIL_38    = 0.38;
 const AMORT_ANS   = 15;
 const ENTRETIEN   = 0.01;
@@ -1065,6 +1066,7 @@ function fmtOnBlur(el) {
 function showTab(i) {
   document.querySelectorAll('.tab-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
   document.querySelectorAll('.tab-pane').forEach((p, idx) => p.classList.toggle('active', idx === i));
+  utrack('tab', { tab: i + 1 });
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1114,6 +1116,7 @@ function updateBonusUI() {
 let conjointActive = false;
 function toggleConjoint() {
   conjointActive = !conjointActive;
+  utrack('toggle_conjoint', { active: conjointActive });
   const tog = document.getElementById('tog_conjoint');
   tog.classList.toggle('on', conjointActive);
   const dis = !conjointActive;
@@ -1156,6 +1159,7 @@ function calcImpotVD(montant) {
 // ═══════════════════════════════════════════════════════════════════════
 function calculate() {
   saveState();
+  utrack('calculate', { lang: currentLang });
 
   // ── 1. REVENUS ──
   const s1       = fmtNum(document.getElementById('salaire_principal').value);
@@ -1473,6 +1477,19 @@ function calculate() {
   const r_cum = cum_montant > 0 ? (lpp_montant*r_lpp + p3_montant*r_p3) / cum_montant : 0;
   analysPilier(cum_montant, r_cum, imp_cum, 'cum');
 
+  // Track anonymised result (no personal data — only ranges and verdicts)
+  const priceRange = prix_achat < 500000 ? '<500k' : prix_achat < 800000 ? '500-800k' : prix_achat < 1200000 ? '800k-1.2M' : prix_achat < 1800000 ? '1.2-1.8M' : '>1.8M';
+  utrack('result', {
+    lang: currentLang,
+    price_range: priceRange,
+    canton: document.getElementById('canton_select').value || 'custom',
+    verdict_theo: cls_t,           // ok / warn / nok
+    has_gap: !funding_gap_ok,
+    lpp_mode: lpp_mode,
+    p3_mode: p3_mode,
+    bonus_mode: modeBonus,
+  });
+
   showToast(i('d_tc'));
 }
 
@@ -1480,6 +1497,7 @@ let lppHardEquity = false;  // default: LPP withdrawal does NOT count as hard eq
 
 function toggleLppHard() {
   lppHardEquity = !lppHardEquity;
+  utrack('lpp_hard_equity', { enabled: lppHardEquity });
   document.getElementById('tog_lpp_hard').classList.toggle('on', lppHardEquity);
   calculate();
 }
@@ -1490,6 +1508,13 @@ function updateLppHardRow() {
   if (row) row.style.display = mode === 'retrait' ? '' : 'none';
 }
 
+
+// ═══════════════════════════════════════════════════════════════════════
+// ANALYTICS — Umami event tracking
+// ═══════════════════════════════════════════════════════════════════════
+function utrack(event, data) {
+  try { if (window.umami) window.umami.track(event, data); } catch(e) {}
+}
 
 // mutation = transfer tax, notaire = notary, registre = land registry
 // Sources: cantonal legislation — indicative, verify with local notary
@@ -1526,6 +1551,7 @@ const CANTON_RATES = {
 function applyCantonRates() {
   const canton = document.getElementById('canton_select').value;
   if (!canton || !CANTON_RATES[canton]) return;
+  utrack('canton', { canton });
   const r = CANTON_RATES[canton];
   document.getElementById('frais_mutation').value = r.mutation.toFixed(1);
   document.getElementById('frais_notaire').value  = r.notaire.toFixed(1);
@@ -1535,6 +1561,7 @@ function applyCantonRates() {
 
 
 function openFeedback() {
+  utrack('feedback_open');
   document.getElementById('feedback-overlay').classList.add('open');
   document.getElementById('fb-message').focus();
   // Update placeholder translation
@@ -1570,6 +1597,7 @@ async function submitFeedback(e) {
       })
     });
     if (res.ok) {
+      utrack('feedback_sent', { lang: currentLang });
       document.getElementById('feedback-form').style.display = 'none';
       document.getElementById('fb-success').style.display = '';
       setTimeout(() => closeFeedback(), 2500);
@@ -1605,6 +1633,7 @@ function dismissPrivacy() {
 
 function applyCashMin() {
   if (window._cashMinVal) {
+    utrack('apply_cash_min');
     document.getElementById('fp_cash').value = fmtInput(window._cashMinVal);
     calculate();
   }
@@ -1662,6 +1691,7 @@ function loadState() {
 // EXPORT / IMPORT JSON
 // ═══════════════════════════════════════════════════════════════════════
 function exportJSON() {
+  utrack('export');
   const state = getState();
   const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
@@ -1679,6 +1709,7 @@ function importJSON(evt) {
     try {
       applyState(JSON.parse(e.target.result));
       saveState();
+      utrack('import');
       calculate();
       showToast('Config importée ✓');
     } catch(err) { showToast('Erreur import JSON'); }
@@ -1691,7 +1722,8 @@ function importJSON(evt) {
 // RESET
 // ═══════════════════════════════════════════════════════════════════════
 function resetAll() {
-  if (!confirm('Réinitialiser tous les champs ?')) return;
+  if (!confirm(i('d_reset') || 'Reset all fields?')) return;
+  utrack('reset');
   localStorage.removeItem('hypo_ch_vd');
   location.reload();
 }
